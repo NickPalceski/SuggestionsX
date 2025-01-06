@@ -1,0 +1,32 @@
+name: SuggestionsX
+version: '1.0-SuggestionsX'
+main: nick.boptart.suggestionsX.SuggestionsX
+api-version: '1.21'
+description: "Players can suggest ideas they want to see on the server!"
+commands:
+  suggestions:
+    usage: /<command>
+    description: "Open SuggestionsX main menu."
+    aliases: [sugg]
+permissions:
+  suggestions.player.create:
+    description: Allows the player to create a suggestion.
+    default: true
+  suggestions.player.delete:
+    description: Allows the player to delete own suggestions.
+    default: true
+  suggestions.admin.create:
+    description: Allows the admin to instantly create a suggestion.
+    default: op
+  suggestions.admin.delete:
+    description: Allows the admin to instantly delete a suggestion.
+    default: op
+  suggestions.reload:
+    description: Allows the sender to reload SuggestionsX config.
+    default: op
+  suggestions.pending.admin:
+    description: Allows the user to view and access pending suggestions.
+    default: op
+  suggestions.admin:
+    description: Allows the user to open admin menu.
+    default: op
