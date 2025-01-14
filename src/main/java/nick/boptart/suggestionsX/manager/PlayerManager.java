@@ -7,6 +7,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -90,9 +91,15 @@ public class PlayerManager {
         return null; // Return null if no matching file is found
     }
 
-    public static List<String> getPlayerSuggestions(UUID playerUUID) {
-
-        return null;
+    public static List<String> getPlayerSuggestions(File playerFile) {
+        if (playerFile.exists()) {
+            FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
+            List<String> playerSuggestions = playerConfig.getStringList("suggestions");
+            if (!playerSuggestions.isEmpty()) {
+                return playerSuggestions;
+            }
+        }
+        return Collections.emptyList();
     }
 
 

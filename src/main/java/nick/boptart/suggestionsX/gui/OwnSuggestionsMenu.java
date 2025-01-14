@@ -27,7 +27,6 @@ public class OwnSuggestionsMenu {
 
 
     public Inventory ownMenu(Player player) {
-        //TODO: list of all suggestions made by the player
         int page = 0;
         int size = 54;
 
@@ -46,49 +45,47 @@ public class OwnSuggestionsMenu {
         backMenu.setItemMeta(glassMeta);
         gui.setItem(size - 5, backMenu); // add to middle last row
 
-        //get player file
+        //get player UUID
         UUID playerUUID = player.getUniqueId();
-        PlayerManager.getPlayerFile(playerUUID);
 
-        //get player suggestions UUID
+        //get player  file and their suggestion's UUID
+        List <String> playerSugg= PlayerManager.getPlayerSuggestions(PlayerManager.getPlayerFile(playerUUID));
 
         //get all suggestion info
+        for (int i = startIndex; i < playerSugg.size() && i < endIndex; i++) {
+            UUID suggUUID = UUID.fromString(playerSugg.get(i));
+            Suggestion suggestion = ConfigManager.getSuggestionByUUID(suggUUID);
+            ItemStack paper = new ItemStack(Material.WRITTEN_BOOK);
+            ItemMeta meta = paper.getItemMeta();
+            meta.setDisplayName(ChatColor.YELLOW + suggestion.getTitle());
+            meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            List<String> lore = new ArrayList<>();
+            if (suggestion.getStatus() == 0) {
+                lore.add(ChatColor.LIGHT_PURPLE + "Description: " + ChatColor.GRAY + suggestion.getDescription());
+                lore.add(" ");
+                lore.add(ChatColor.GOLD + "" + ChatColor.BOLD + "PENDING");
+            }
+            else if (suggestion.getStatus()== 1){
+                lore.add(ChatColor.LIGHT_PURPLE + "Description: " + ChatColor.GRAY + suggestion.getDescription());
+                lore.add(ChatColor.GREEN + "Up Votes: " + suggestion.getPosVotes());
+                lore.add(ChatColor.RED + "Down Votes: " + suggestion.getNegVotes());
+                lore.add("Total Votes: " + (suggestion.getTotalVotes()));
+                lore.add(" ");
+                lore.add(ChatColor.GREEN + "" + ChatColor.BOLD + "APPROVED");
 
-        //place suggestions in GUI
+            }
+            else{
+                lore.add(ChatColor.LIGHT_PURPLE + "Description: " + ChatColor.GRAY + suggestion.getDescription());
+                lore.add(" ");
+                lore.add(ChatColor.DARK_RED + "" + ChatColor.BOLD + "DENIED");
+                lore.add(ChatColor.WHITE + "Click to remove." + ChatColor.GRAY + " (Left-Click)");
+            }
 
-//        for (int i = startIndex; i < ConfigManager.getSuggestions().size() && i < endIndex; i++) {
-//            Suggestion suggestion = ConfigManager.getSuggestions().get(i);
-//            ItemStack paper = new ItemStack(Material.PAPER);
-//            ItemMeta meta = paper.getItemMeta();
-//            meta.setDisplayName(ChatColor.YELLOW + suggestion.getTitle());
-//            meta.addEnchant(Enchantment.UNBREAKING, 1, true);
-//            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-//            List<String> lore = new ArrayList<>();
-//            if (suggestion.getStatus() == 0) {
-//                lore.add(ChatColor.LIGHT_PURPLE + "Description: " + ChatColor.GRAY + suggestion.getDescription());
-//                lore.add(" ");
-//                lore.add(ChatColor.GOLD + "" + ChatColor.BOLD + "PENDING");
-//            }
-//            else if (suggestion.getStatus()== 1){
-//                lore.add(ChatColor.LIGHT_PURPLE + "Description: " + ChatColor.GRAY + suggestion.getDescription());
-//                lore.add(ChatColor.GREEN + "Up Votes: " + suggestion.getPosVotes());
-//                lore.add(ChatColor.RED + "Down Votes: " + suggestion.getNegVotes());
-//                lore.add("Total Votes: " + (suggestion.getTotalVotes()));
-//                lore.add(" ");
-//                lore.add(ChatColor.GREEN + "" + ChatColor.BOLD + "APPROVED");
-//
-//            }
-//            else{
-//                lore.add(ChatColor.LIGHT_PURPLE + "Description: " + ChatColor.GRAY + suggestion.getDescription());
-//                lore.add(" ");
-//                lore.add(ChatColor.DARK_RED + "" + ChatColor.BOLD + "DENIED");
-//                lore.add(ChatColor.WHITE + "Click to remove." + ChatColor.GRAY + " (Left-Click)");
-//            }
-//
-//            meta.setLore(lore);
-//            paper.setItemMeta(meta);
-//            gui.setItem(i % 45, paper);
-//        }
+            meta.setLore(lore);
+            paper.setItemMeta(meta);
+            gui.setItem(i % 45, paper);
+        }
 
         // Add navigation arrows if needed
         if ((size - 9) < (ConfigManager.getSuggestions().size() - (size-9)*page)) {

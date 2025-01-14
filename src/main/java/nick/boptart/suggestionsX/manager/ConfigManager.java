@@ -10,10 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ConfigManager {
 
@@ -90,6 +87,13 @@ public class ConfigManager {
             guiTitles.add(ChatColor.stripColor(title));
         });
         return guiTitles;
+    }
+    
+    public static Suggestion getSuggestionByUUID(UUID uuid) {
+        return ConfigManager.getSuggestions().stream()
+                .filter(suggestion -> suggestion.getUniqueID().equals(uuid))
+                .findFirst()
+                .orElse(null);
     }
 
 
