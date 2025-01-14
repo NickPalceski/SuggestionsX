@@ -90,6 +90,15 @@ public class PlayerManager {
         return null; // Return null if no matching file is found
     }
 
+    public static List<String> getPlayerSuggestions(UUID playerUUID) {
+
+        return null;
+    }
+
+
+
+
+
     public static void savePlayerFile(File playerFile){
         if (playerFile != null) {
             FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
