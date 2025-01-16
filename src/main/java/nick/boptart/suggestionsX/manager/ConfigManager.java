@@ -177,6 +177,7 @@ public class ConfigManager {
             suggestionsConfig.set(path + ".negVotes", suggestion.negVotes);
 
             //TODO: Add voters to the Set of the suggestion(s)?
+            //  put voters UUID in a list attached to each suggestion to keep track on who voted for what.
         }
         try {
             suggestionsConfig.save(suggestionsFile);
@@ -213,7 +214,7 @@ public class ConfigManager {
                 int totalVotes = suggestionsConfig.getInt("suggestions." + key + ".totalVotes");
                 int posVotes = suggestionsConfig.getInt("suggestions." + key + ".posVotes");
                 int negVotes = suggestionsConfig.getInt("suggestions." + key + ".negVotes");
-                //TODO: Add voters Set to Suggestion
+                //TODO: Load voters Set from Suggestion(s)?
 
 
                 Suggestion suggestion = new Suggestion(title, description, suggestor);

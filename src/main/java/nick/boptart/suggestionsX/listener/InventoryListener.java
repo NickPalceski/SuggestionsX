@@ -67,7 +67,7 @@ public class InventoryListener implements Listener {
                     return;
                 }
                 // Open the player's suggestions GUI
-                PendingMenu.openPendingSuggestionsGUI(player);
+                PendingMenu.openPendingSuggestionsMenu(player);
             }
 
 
@@ -134,14 +134,15 @@ public class InventoryListener implements Listener {
 
             //admin click handling
             if (player.hasPermission("suggestions.admin")) {
+                //get suggestion title.
+                String suggestionTitle = ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName());
+
+                //get suggestion UUID
+                UUID suggestionUUID = Suggestion.getSuggestionByTitle(suggestionTitle).getUniqueID();
+
                 switch (click) {
                     case LEFT:
 
-                        //get suggestion title.
-                        String suggestionTitle = ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName());
-
-                        //get suggestion UUID
-                        UUID suggestionUUID = Suggestion.getSuggestionByTitle(suggestionTitle).getUniqueID();
 
                         //approve suggestion
                         Suggestion.getSuggestionByTitle(suggestionTitle).updateStatus(1);
@@ -154,7 +155,7 @@ public class InventoryListener implements Listener {
                         PlayerManager.getPlayerFile(PlayerManager.getCreatorUUID(Suggestion.getSuggestionByTitle(suggestionTitle).getCreator()));
                         PlayerManager.addSuggestionToPlayer(Suggestion.getSuggestionByTitle(suggestionTitle), Suggestion.getSuggestionByTitle(suggestionTitle).getCreator());
 
-                        //save changes
+                        //save changes?
                         ConfigManager.savePendingSuggestions();
                         ConfigManager.saveSuggestions();
                         PlayerManager.savePlayerFile(PlayerManager.getPlayerFile(PlayerManager.getCreatorUUID(Suggestion.getSuggestionByTitle(suggestionTitle).getCreator())));
@@ -163,15 +164,14 @@ public class InventoryListener implements Listener {
                     case RIGHT:
                         // TODO: delete suggestion (reflects in players own suggestions)
 
-                        //get suggestion title
-
-                        //get suggestion UUID
-
                         //deny suggestion
-
+                        Suggestion.getSuggestionByTitle(suggestionTitle).updateStatus(2);
                         //remove from pending list
+                        ConfigManager.getPendingSuggestions().remove(Suggestion.getSuggestionByTitle(suggestionTitle));
 
-                        //save changes
+                        //save changes?
+                        ConfigManager.savePendingSuggestions();
+                        ConfigManager.saveSuggestions();
 
                         break;
                     default:
@@ -179,6 +179,52 @@ public class InventoryListener implements Listener {
                         break;
                 }
             }
+        }
+        //handle own suggestions menu clicking
+        else if ((clickedItem.getType() == Material.WRITTEN_BOOK && clickedItem.containsEnchantment(Enchantment.UNBREAKING))){
+            ClickType click = event.getClick();
+            //get suggestion title.
+            String suggestionTitle = ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName());
+            //get suggestion UUID
+            UUID suggestionUUID = Suggestion.getSuggestionByTitle(suggestionTitle).getUniqueID();
+
+            int currStatus = Suggestion.getSuggestionByTitle(ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName())).getStatus();
+
+            if (click == ClickType.LEFT) {
+                //TODO:Check suggestion status, perform action based on status.
+                switch (currStatus){
+                    case 0://pending
+                        //remove suggestion from pending suggestions
+                        ConfigManager.getPendingSuggestions().remove(Suggestion.getSuggestionByTitle(suggestionTitle));
+                        //remove suggestion UUID from suggestor's file
+                        PlayerManager.removeSuggestionFromPlayer(Suggestion.getSuggestionByTitle(suggestionTitle), Suggestion.getSuggestionByTitle(suggestionTitle).getCreator());
+                        //save changes?
+                        ConfigManager.savePendingSuggestions();
+                        PlayerManager.savePlayerFile(PlayerManager.getPlayerFile(PlayerManager.getCreatorUUID(Suggestion.getSuggestionByTitle(suggestionTitle).getCreator())));
+                        break;
+                    case 1://approved
+                        //TODO:pend approval for deletion
+
+                        break;
+                    case 2://denied
+                        //remove suggestion from suggestors file
+                        PlayerManager.removeSuggestionFromPlayer(Suggestion.getSuggestionByTitle(suggestionTitle), Suggestion.getSuggestionByTitle(suggestionTitle).getCreator());
+                        //refund suggestors point
+                        int playerSuggestionCount = PlayerManager.getPlayerSuggestionCount(String.valueOf(player));
+                        PlayerManager.setPlayerSuggestionCount(String.valueOf(player), playerSuggestionCount + 1);
+                        break;
+
+                    default:
+                        player.sendMessage(ChatColor.RED + "Invalid suggestion status.");
+                        break;
+                }
+
+
+            } else {
+                player.sendMessage(ChatColor.RED + "Invalid click type.");
+
+            }
+
         }
 
 

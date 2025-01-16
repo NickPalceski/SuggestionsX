@@ -21,12 +21,12 @@ public class OwnSuggestionsMenu {
 
 
     public void openOwnMenu(Player player) {
-        Inventory ownMenu = ownMenu(player);
+        Inventory ownMenu = createOwnMenu(player);
         player.openInventory(ownMenu);
     }
 
 
-    public Inventory ownMenu(Player player) {
+    public Inventory createOwnMenu(Player player) {
         int page = 0;
         int size = 54;
 
@@ -65,6 +65,8 @@ public class OwnSuggestionsMenu {
                 lore.add(ChatColor.LIGHT_PURPLE + "Description: " + ChatColor.GRAY + suggestion.getDescription());
                 lore.add(" ");
                 lore.add(ChatColor.GOLD + "" + ChatColor.BOLD + "PENDING");
+                lore.add(ChatColor.WHITE + "Click to delete." + ChatColor.GRAY + " (Left-Click)");
+                lore.add(ChatColor.ITALIC + "Pending suggestions can be removed at any time.");
             }
             else if (suggestion.getStatus()== 1){
                 lore.add(ChatColor.LIGHT_PURPLE + "Description: " + ChatColor.GRAY + suggestion.getDescription());
@@ -73,13 +75,16 @@ public class OwnSuggestionsMenu {
                 lore.add("Total Votes: " + (suggestion.getTotalVotes()));
                 lore.add(" ");
                 lore.add(ChatColor.GREEN + "" + ChatColor.BOLD + "APPROVED");
+                lore.add(ChatColor.WHITE + "Click to delete." + ChatColor.GRAY + " (Left-Click)");
+                lore.add(ChatColor.ITALIC + "Approved suggestions will have to be approved for removal.");
 
             }
             else{
                 lore.add(ChatColor.LIGHT_PURPLE + "Description: " + ChatColor.GRAY + suggestion.getDescription());
                 lore.add(" ");
                 lore.add(ChatColor.DARK_RED + "" + ChatColor.BOLD + "DENIED");
-                lore.add(ChatColor.WHITE + "Click to remove." + ChatColor.GRAY + " (Left-Click)");
+                lore.add(ChatColor.WHITE + "Click to delete." + ChatColor.GRAY + " (Left-Click)");
+                lore.add(ChatColor.ITALIC + "You will get your suggestion point back.");
             }
 
             meta.setLore(lore);

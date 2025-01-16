@@ -1,7 +1,6 @@
 package nick.boptart.suggestionsX.manager;
 
 import nick.boptart.suggestionsX.util.Suggestion;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -12,6 +11,41 @@ import java.util.List;
 import java.util.UUID;
 
 public class PlayerManager {
+
+
+
+    public static int getPlayerSuggestionCount(String playerName) {
+        File playerFile = getPlayerFileByName(playerName);
+        if (playerFile != null) {
+            FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
+            //TODO:get playerSuggestionCount
+            int suggestionCount = playerConfig.getInt("SuggestionLimit");
+            if (suggestionCount >= 0){
+                return suggestionCount;
+            }
+            else{
+                System.out.println("Invalid suggestion count.");
+            }
+        }
+        return 0; // Return 0 if no suggestion count is found
+    }
+
+    public static void setPlayerSuggestionCount(String playerName, int num){
+        File playerFile = getPlayerFileByName(playerName);
+        if (playerFile != null) {
+            FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
+            playerConfig.set("SuggestionLimit", num);
+            try {
+                playerConfig.save(playerFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("§cFailed to save player file.");
+            }
+        }
+        else {
+            System.out.println("§cCould not find player file.");
+        }
+    }
 
     public static UUID getPlayerUUIDByName(String playerName) {
         File playerFile = getPlayerFileByName(playerName);
@@ -66,11 +100,35 @@ public class PlayerManager {
                 playerConfig.save(playerFile);
             } catch (IOException e) {
                 e.printStackTrace();
-                Bukkit.getPlayer(playerUUID).sendMessage("§cFailed to save your vote. Please try again.");
+                System.out.println("§cFailed to save your vote. Please try again.");
             }
         }
         else {
-            Bukkit.getPlayer(playerUUID).sendMessage("§cCould not find player file.");
+            System.out.println("§cCould not find player file.");
+        }
+
+    }
+
+    public static void removeSuggestionFromPlayer(Suggestion suggestion, String playerName) {
+        UUID playerUUID = getPlayerUUIDByName(playerName);
+
+        // Remove the suggestion UUID from the player's file
+        File playerFile = getPlayerFile(playerUUID);
+        if (playerFile != null) {
+            FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
+            List<String> suggestions = playerConfig.getStringList("suggestions");
+            suggestions.remove(suggestion.getUniqueID().toString());
+            playerConfig.set("suggestions", suggestions);
+
+            try {
+                playerConfig.save(playerFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("§cFailed to save player file.");
+            }
+        }
+        else {
+            System.out.println("§cCould not find player file.");
         }
 
     }

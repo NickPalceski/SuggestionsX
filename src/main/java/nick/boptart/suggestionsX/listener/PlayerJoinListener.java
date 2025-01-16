@@ -22,8 +22,13 @@ public class PlayerJoinListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         UUID playerUUID = player.getUniqueId();
-        //TODO: set default values for player in files
-        ConfigManager.createPlayerFile(player, plugin);
+
+        if (!(player.hasPlayedBefore())) {
+            //TODO: set default values for player in files
+            ConfigManager.createPlayerFile(player, plugin);
+
+        }
+
 
 
 

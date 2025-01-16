@@ -17,13 +17,13 @@ import java.util.List;
 public class PendingMenu {
 
 
-    public static void openPendingSuggestionsGUI(Player player) {
-        Inventory gui = createPendingGUI();
+    public static void openPendingSuggestionsMenu(Player player) {
+        Inventory gui = createPendingMenu();
         player.openInventory(gui);
     }
 
 
-    private static Inventory createPendingGUI() {
+    private static Inventory createPendingMenu() {
         int page = 0;
         int size = 54;
 

@@ -26,7 +26,7 @@ public class PendingSuggestionsCommand implements CommandExecutor {
             return true;
         }
 
-        PendingMenu.openPendingSuggestionsGUI(player);
+        PendingMenu.openPendingSuggestionsMenu(player);
         return true;
 
     }
