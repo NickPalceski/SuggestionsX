@@ -2,6 +2,7 @@ package nick.boptart.suggestionsX.listener;
 
 import nick.boptart.suggestionsX.SuggestionsX;
 import nick.boptart.suggestionsX.manager.ConfigManager;
+import nick.boptart.suggestionsX.manager.PlayerManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -23,10 +24,11 @@ public class PlayerJoinListener implements Listener {
         Player player = event.getPlayer();
         UUID playerUUID = player.getUniqueId();
 
-        if (!(player.hasPlayedBefore())) {
-            //TODO: set default values for player in files
-            ConfigManager.createPlayerFile(player, plugin);
+        //if player has played before or player file does not exist
+        if (!(player.hasPlayedBefore()) || !(PlayerManager.getPlayerFile(playerUUID).exists())) {
 
+            //let default values for player in files
+            ConfigManager.createPlayerFile(player, plugin);
         }
 
 

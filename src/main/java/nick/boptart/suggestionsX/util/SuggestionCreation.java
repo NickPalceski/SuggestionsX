@@ -114,7 +114,7 @@ public class SuggestionCreation {
                 player.playSound(player, Sound.BLOCK_ANVIL_USE, 0.8f, 0.8f);
                 suggestionData.put("description", message);
                 player.sendMessage(ChatColor.GREEN + "Description set to:" + ChatColor.WHITE + " " + message);
-                player.sendMessage(ChatColor.AQUA + "Type " + ChatColor.BOLD + "suggestor's name.");
+                player.sendMessage(ChatColor.AQUA + "Type " + ChatColor.BOLD + "suggestor's name (Case Sensitive).");
                 player.sendMessage("-----------------------------------------------");
                 suggestionData.put("stage", "playerName");
                 break;
@@ -130,6 +130,25 @@ public class SuggestionCreation {
                         suggestionData.get("playerName")
                 );
                 ConfigManager.getSuggestions().add(suggestion);
+                // Add the suggestion UUID to the player's file
+                File suggestorFile = PlayerManager.getPlayerFileByName(suggestionData.get("playerName"));
+                if (suggestorFile != null) {
+                    FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(suggestorFile);
+                    List<String> suggestions = playerConfig.getStringList("suggestions");
+                    suggestions.add(suggestion.getUniqueID().toString());
+                    playerConfig.set("suggestions", suggestions);
+
+                    try {
+                        playerConfig.save(suggestorFile);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        player.sendMessage("§cFailed to save your suggestion.");
+                    }
+
+                }
+                else{
+                    player.sendMessage("§cCould not find suggestor's file.");
+                }
                 player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Suggestion added:" + ChatColor.WHITE + " " + suggestion.getTitle());
                 player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.8f, 0.8f);
                 playersAddingSuggestion.remove(playerUUID);

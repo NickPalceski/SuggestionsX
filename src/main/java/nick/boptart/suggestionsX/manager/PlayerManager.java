@@ -18,8 +18,8 @@ public class PlayerManager {
         File playerFile = getPlayerFileByName(playerName);
         if (playerFile != null) {
             FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
-            //TODO:get playerSuggestionCount
             int suggestionCount = playerConfig.getInt("SuggestionLimit");
+
             if (suggestionCount >= 0){
                 return suggestionCount;
             }
@@ -27,6 +27,7 @@ public class PlayerManager {
                 System.out.println("Invalid suggestion count.");
             }
         }
+
         return 0; // Return 0 if no suggestion count is found
     }
 

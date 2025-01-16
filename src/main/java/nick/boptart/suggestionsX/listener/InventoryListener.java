@@ -96,6 +96,11 @@ public class InventoryListener implements Listener {
         else if (clickedItem.getType() == Material.PAPER && clickedItem.containsEnchantment(Enchantment.UNBREAKING)) {
             ClickType click = event.getClick();
 
+            //get suggestion title.
+            String suggestionTitle = ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName());
+            //get suggestion UUID
+            UUID suggestionUUID = Suggestion.getSuggestionByTitle(suggestionTitle).getUniqueID();
+
             //admin click handling
             if (player.hasPermission("suggestions.admin")) {
                 switch (click) {
@@ -162,7 +167,7 @@ public class InventoryListener implements Listener {
 
                         break;
                     case RIGHT:
-                        // TODO: delete suggestion (reflects in players own suggestions)
+                        //delete suggestion (reflects in players own suggestions)
 
                         //deny suggestion
                         Suggestion.getSuggestionByTitle(suggestionTitle).updateStatus(2);
@@ -191,9 +196,12 @@ public class InventoryListener implements Listener {
             int currStatus = Suggestion.getSuggestionByTitle(ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName())).getStatus();
 
             if (click == ClickType.LEFT) {
-                //TODO:Check suggestion status, perform action based on status.
+
+                //Check suggestion status, perform action based on status.
                 switch (currStatus){
+
                     case 0://pending
+
                         //remove suggestion from pending suggestions
                         ConfigManager.getPendingSuggestions().remove(Suggestion.getSuggestionByTitle(suggestionTitle));
                         //remove suggestion UUID from suggestor's file
@@ -202,11 +210,14 @@ public class InventoryListener implements Listener {
                         ConfigManager.savePendingSuggestions();
                         PlayerManager.savePlayerFile(PlayerManager.getPlayerFile(PlayerManager.getCreatorUUID(Suggestion.getSuggestionByTitle(suggestionTitle).getCreator())));
                         break;
+
                     case 1://approved
                         //TODO:pend approval for deletion
 
                         break;
+
                     case 2://denied
+
                         //remove suggestion from suggestors file
                         PlayerManager.removeSuggestionFromPlayer(Suggestion.getSuggestionByTitle(suggestionTitle), Suggestion.getSuggestionByTitle(suggestionTitle).getCreator());
                         //refund suggestors point

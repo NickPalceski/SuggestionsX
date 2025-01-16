@@ -145,7 +145,9 @@ public class ConfigManager {
             dataFolder.mkdirs();
         }
     }
-
+    //TODO:If playerFile does not exist by playerName, check if their UUID is in any of the playerFiles before creating a new one.
+    // (In case player changes name).
+    //  If a playerFile exists with their UUID and not their current name, rename the file to their current name.
     public static void createPlayerFile(Player player, JavaPlugin plugin) {
         File playerFile = new File(plugin.getDataFolder(), "SuggestionData/PlayerData/" + player.getName() + ".yml");
         if (!playerFile.exists()) {
@@ -176,8 +178,9 @@ public class ConfigManager {
             suggestionsConfig.set(path + ".posVotes", suggestion.posVotes);
             suggestionsConfig.set(path + ".negVotes", suggestion.negVotes);
 
-            //TODO: Add voters to the Set of the suggestion(s)?
-            //  put voters UUID in a list attached to each suggestion to keep track on who voted for what.
+            //Add voters to the Set of the suggestion(s)?
+            suggestionsConfig.set(path + ".voters", suggestion.getVoters());
+
         }
         try {
             suggestionsConfig.save(suggestionsFile);
@@ -196,6 +199,7 @@ public class ConfigManager {
             pendingConfig.set(path + ".description", suggestion.getDescription());
             pendingConfig.set(path + ".suggestor", suggestion.getCreator());
         }
+
         try {
             suggestionsConfig.save(pendingFile);
         } catch (IOException e) {
@@ -214,8 +218,6 @@ public class ConfigManager {
                 int totalVotes = suggestionsConfig.getInt("suggestions." + key + ".totalVotes");
                 int posVotes = suggestionsConfig.getInt("suggestions." + key + ".posVotes");
                 int negVotes = suggestionsConfig.getInt("suggestions." + key + ".negVotes");
-                //TODO: Load voters Set from Suggestion(s)?
-
 
                 Suggestion suggestion = new Suggestion(title, description, suggestor);
                 suggestion.totalVotes = totalVotes;

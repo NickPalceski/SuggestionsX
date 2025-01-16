@@ -13,15 +13,15 @@ import java.util.UUID;
 public class VoteManager {
 
 
-    public boolean hasNotVoted(UUID playerUUID, Suggestion suggestion) {
+    public static boolean hasNotVoted(UUID playerUUID, Suggestion suggestion) {
         return suggestion.getVoters().add(playerUUID); // Returns false if the UUID already exists
     }
 
-    public boolean hasVoted(UUID playerUUID, Suggestion suggestion) {
+    public static boolean hasVoted(UUID playerUUID, Suggestion suggestion) {
         return suggestion.getVoters().contains(playerUUID);
     }
 
-    public void handleVote(Player player, Suggestion suggestion) {
+    public static void handleVote(Player player, Suggestion suggestion) {
         UUID playerUUID = player.getUniqueId();
 
         if (hasVoted(playerUUID, suggestion)) {
@@ -37,11 +37,11 @@ public class VoteManager {
         }
     }
 
-    public void removePlayerFromVoters(UUID playerUUID, Suggestion suggestion) {
+    public static void removePlayerFromVoters(UUID playerUUID, Suggestion suggestion) {
         suggestion.getVoters().remove(playerUUID);
     }
 
-    public void addPlayerFromVoters(UUID playerUUID, Suggestion suggestion) {
+    public static void addPlayerFromVoters(UUID playerUUID, Suggestion suggestion) {
         suggestion.getVoters().add(playerUUID);
     }
 
