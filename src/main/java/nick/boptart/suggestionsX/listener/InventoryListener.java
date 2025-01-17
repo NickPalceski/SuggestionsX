@@ -98,39 +98,18 @@ public class InventoryListener implements Listener {
 
             //get suggestion title.
             String suggestionTitle = ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName());
-            //get suggestion UUID
-            UUID suggestionUUID = Suggestion.getSuggestionByTitle(suggestionTitle).getUniqueID();
 
-            //admin click handling
-            if (player.hasPermission("suggestions.admin")) {
+            Suggestion suggestion = Suggestion.getSuggestionByTitle(suggestionTitle);
+
                 switch (click) {
-                    case LEFT:
-                        // TODO: Get clicked suggestion, upvote and increment total votes, update that the player voted for clicked suggestion (remove vote if already voted)
+                    case LEFT, RIGHT, SHIFT_RIGHT:
+                        VoteManager.handleVote(player, suggestion, click);
                         break;
-                    case RIGHT:
-                        // TODO: Get clicked suggestion, downvote and increment total votes, update that the player voted for clicked suggestion (remove vote if already voted)
-                        break;
-                    case SHIFT_RIGHT:
-                        //TODO: Get clicked suggestion, delete suggestion.
-                        break;
+
                     default:
                         player.sendMessage(ChatColor.RED + "Invalid click type.");
                         break;
                 }
-            }
-
-                //else, player click handling
-            switch (click) {
-                case LEFT:
-                    //TODO: Get clicked suggestion, upvote and increment total votes, update that the player voted for clicked suggestion (remove vote if already voted)
-                    break;
-                case RIGHT:
-                    //TODO: Get clicked suggestion, downvote and increment total votes, update that the player voted for clicked suggestion (remove vote if already voted)
-                    break;
-                default:
-                    player.sendMessage(ChatColor.RED + "Invalid click type.");
-                    break;
-            }
 
         }
         //handle pending menu clicking
@@ -142,13 +121,8 @@ public class InventoryListener implements Listener {
                 //get suggestion title.
                 String suggestionTitle = ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName());
 
-                //get suggestion UUID
-                UUID suggestionUUID = Suggestion.getSuggestionByTitle(suggestionTitle).getUniqueID();
-
                 switch (click) {
                     case LEFT:
-
-
                         //approve suggestion
                         Suggestion.getSuggestionByTitle(suggestionTitle).updateStatus(1);
 
@@ -167,41 +141,35 @@ public class InventoryListener implements Listener {
 
                         break;
                     case RIGHT:
-                        //delete suggestion (reflects in players own suggestions)
-
                         //deny suggestion
                         Suggestion.getSuggestionByTitle(suggestionTitle).updateStatus(2);
+
                         //remove from pending list
                         ConfigManager.getPendingSuggestions().remove(Suggestion.getSuggestionByTitle(suggestionTitle));
 
                         //save changes?
                         ConfigManager.savePendingSuggestions();
                         ConfigManager.saveSuggestions();
-
                         break;
+
                     default:
                         player.sendMessage(ChatColor.RED + "You do not have permission or invalid click type.");
                         break;
                 }
             }
         }
+
         //handle own suggestions menu clicking
         else if ((clickedItem.getType() == Material.WRITTEN_BOOK && clickedItem.containsEnchantment(Enchantment.UNBREAKING))){
             ClickType click = event.getClick();
             //get suggestion title.
             String suggestionTitle = ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName());
-            //get suggestion UUID
-            UUID suggestionUUID = Suggestion.getSuggestionByTitle(suggestionTitle).getUniqueID();
-
             int currStatus = Suggestion.getSuggestionByTitle(ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName())).getStatus();
 
             if (click == ClickType.LEFT) {
-
                 //Check suggestion status, perform action based on status.
                 switch (currStatus){
-
-                    case 0://pending
-
+                    case 0:     //pending
                         //remove suggestion from pending suggestions
                         ConfigManager.getPendingSuggestions().remove(Suggestion.getSuggestionByTitle(suggestionTitle));
                         //remove suggestion UUID from suggestor's file
@@ -211,15 +179,15 @@ public class InventoryListener implements Listener {
                         PlayerManager.savePlayerFile(PlayerManager.getPlayerFile(PlayerManager.getCreatorUUID(Suggestion.getSuggestionByTitle(suggestionTitle).getCreator())));
                         break;
 
-                    case 1://approved
+                    case 1:     //approved
                         //TODO:pend approval for deletion
 
                         break;
 
-                    case 2://denied
-
+                    case 2:     //denied
                         //remove suggestion from suggestors file
                         PlayerManager.removeSuggestionFromPlayer(Suggestion.getSuggestionByTitle(suggestionTitle), Suggestion.getSuggestionByTitle(suggestionTitle).getCreator());
+
                         //refund suggestors point
                         int playerSuggestionCount = PlayerManager.getPlayerSuggestionCount(String.valueOf(player));
                         PlayerManager.setPlayerSuggestionCount(String.valueOf(player), playerSuggestionCount + 1);

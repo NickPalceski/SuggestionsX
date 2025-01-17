@@ -69,6 +69,9 @@ public class SuggestionCreation {
                     suggestions.add(suggestion.getUniqueID().toString());
                     playerConfig.set("suggestions", suggestions);
 
+                    int suggestionCount = playerConfig.getInt("suggestionCount");
+                    playerConfig.set("suggestionCount", suggestionCount - 1);
+
                     try {
                         playerConfig.save(playerFile);
                     } catch (IOException e) {

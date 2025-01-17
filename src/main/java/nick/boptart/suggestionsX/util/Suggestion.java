@@ -48,13 +48,13 @@ public class Suggestion {
 
     }
 
-    private void increasePosVotes(){posVotes++;};
+    public void increasePosVotes(){posVotes++;};
 
-    private void decreasePosVotes(){posVotes--;};
+    public void decreasePosVotes(){posVotes--;};
 
-    private void increaseNegVotes(){negVotes++;};
+    public void increaseNegVotes(){negVotes++;};
 
-    private void decreaseNegVotes(){negVotes--;};
+    public void decreaseNegVotes(){negVotes--;};
 
     public void updateStatus(int newStatus) {
         if (this.status == newStatus) {
@@ -69,6 +69,14 @@ public class Suggestion {
 
     public Set<UUID> getVoters() {
         return voters;
+    }
+
+    public void increaseTotalVotes(Suggestion suggestion){
+        suggestion.totalVotes++;
+    }
+
+    public void decreaseTotalVotes(){
+        totalVotes--;
     }
 
 

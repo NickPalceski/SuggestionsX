@@ -4,6 +4,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import nick.boptart.suggestionsX.util.Suggestion;
+import org.bukkit.event.inventory.ClickType;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,20 +22,38 @@ public class VoteManager {
         return suggestion.getVoters().contains(playerUUID);
     }
 
-    public static void handleVote(Player player, Suggestion suggestion) {
+    public static void handleVote(Player player, Suggestion suggestion, ClickType clickType) {
         UUID playerUUID = player.getUniqueId();
 
         if (hasVoted(playerUUID, suggestion)) {
-            player.sendMessage("§cYou have already voted for this suggestion!");
-            return;
-        }
 
-        if (hasNotVoted(playerUUID, suggestion)) {
-            player.sendMessage("§aYour vote has been added!");
+            suggestion.getVoters().remove(playerUUID);
+            suggestion.decreaseTotalVotes();
+            //TODO: somehow figure out if the player upvoted or downvoted and decrease the respective vote count.
 
-        } else {
+            player.sendMessage("§cRemoved your previous vote.");
+
+        } else if (hasNotVoted(playerUUID, suggestion) && clickType == ClickType.LEFT) { //upvote
+            suggestion.increasePosVotes();
+            suggestion.increaseTotalVotes(suggestion);
+            suggestion.getVoters().add(playerUUID);
+            player.sendMessage("§aYour upvote has been added!");
+
+        } else if (hasNotVoted(playerUUID, suggestion) && clickType == ClickType.RIGHT) { //downvote
             player.sendMessage("§cFailed to add your vote. Please try again.");
+            suggestion.increaseNegVotes();
+            suggestion.increaseTotalVotes(suggestion);
+            suggestion.getVoters().add(playerUUID);
+            player.sendMessage("§aYour downvote has been added!");
+
+        } else if (clickType == ClickType.SHIFT_RIGHT && player.hasPermission("suggestions.admin")) {
+            ConfigManager.getSuggestions().remove(suggestion);
+            player.sendMessage("§cYou have deleted this suggestion.");
+
+        }else{
+            player.sendMessage("§cFailed to register a valid click.");
         }
+
     }
 
     public static void removePlayerFromVoters(UUID playerUUID, Suggestion suggestion) {

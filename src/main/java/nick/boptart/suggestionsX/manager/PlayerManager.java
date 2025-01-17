@@ -3,6 +3,7 @@ package nick.boptart.suggestionsX.manager;
 import nick.boptart.suggestionsX.util.Suggestion;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +13,26 @@ import java.util.UUID;
 
 public class PlayerManager {
 
+
+    public static boolean hasSuggestionPoints(Player player) {
+        File playerFile = getPlayerFileByName(player.getName());
+
+        if (playerFile != null) {
+            int suggestionCount = getPlayerSuggestionCount(player.getName());
+
+            if (suggestionCount > 0){
+                return true;
+            }
+            else{
+                System.out.println("No suggestions left!");
+            }
+        }
+
+        else{
+            System.out.println("§cCould not find player file.");
+        }
+        return false;
+    }
 
 
     public static int getPlayerSuggestionCount(String playerName) {
