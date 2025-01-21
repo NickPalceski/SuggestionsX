@@ -24,10 +24,10 @@ public class PlayerJoinListener implements Listener {
         Player player = event.getPlayer();
         UUID playerUUID = player.getUniqueId();
 
-        //if player has played before or player file does not exist
-        if (!(player.hasPlayedBefore()) || !(PlayerManager.getPlayerFile(playerUUID).exists())) {
+        //if player file does not exist, create player file.
+        if (!(PlayerManager.getPlayerFile(playerUUID).exists())) {
 
-            //let default values for player in files
+            //set default values for player in files
             ConfigManager.createPlayerFile(player, plugin);
         }
 

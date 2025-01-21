@@ -21,8 +21,10 @@ public final class SuggestionsX extends JavaPlugin {
     @Override
     public void onEnable() {
         // Plugin startup logic
+        instance = this;
 
-        startConfig();
+        ConfigManager configManager = new ConfigManager(this);
+        ConfigManager.initialize(configManager);
 
         getServer().getPluginManager().registerEvents(new ChatListener(), this);
         getServer().getPluginManager().registerEvents(new InventoryListener(ConfigManager.getGUITitles()), this);
@@ -48,13 +50,6 @@ public final class SuggestionsX extends JavaPlugin {
     }
 
 
-
-
-
-    public void startConfig() {
-        ConfigManager configManager = new ConfigManager(this);
-        ConfigManager.initialize(configManager);
-    }
 
 
 }
