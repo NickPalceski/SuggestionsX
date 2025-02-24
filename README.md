@@ -1,4 +1,5 @@
-# SuggestionsX
+![image](https://github.com/user-attachments/assets/db93ed95-3b3b-4e2c-9778-4ca64357d805)
+
 
 ## Just a more advanced version of SuggestionsPL   
 ###(currently still in development)
@@ -12,6 +13,8 @@ My main goal right now is to finish the functionality of the plugin and then go 
 ###      pending suggestions (for admins)
 ### - Configurable limit of suggestions players can make.
 ### - Configurable GUI titles (with color codes).
+### - Player files to manage a players own suggestions.
+### - A suggestions file to manage all suggestions.
 
 
 # Perfect Scenario
