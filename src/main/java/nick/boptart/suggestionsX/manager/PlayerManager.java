@@ -1,18 +1,23 @@
 package nick.boptart.suggestionsX.manager;
 
+import nick.boptart.suggestionsX.SuggestionsX;
 import nick.boptart.suggestionsX.util.Suggestion;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class PlayerManager {
 
+    private static JavaPlugin plugin;
+
+    public static void initialize(JavaPlugin pluginInstance) {
+        plugin = pluginInstance;
+    }
 
     public static boolean hasSuggestionPoints(Player player) {
         File playerFile = getPlayerFileByName(player.getName());
@@ -37,26 +42,24 @@ public class PlayerManager {
 
     public static int getPlayerSuggestionCount(String playerName) {
         File playerFile = getPlayerFileByName(playerName);
+
         if (playerFile != null) {
             FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
-            int suggestionCount = playerConfig.getInt("SuggestionLimit");
+            int suggestionCount = playerConfig.getInt("suggestionsLimit"); // Ensure correct key name
 
-            if (suggestionCount >= 0){
-                return suggestionCount;
-            }
-            else{
-                System.out.println("Invalid suggestion count.");
-            }
+            System.out.println("Retrieved suggestion count for " + playerName + ": " + suggestionCount);
+            return suggestionCount;
         }
 
-        return 0; // Return 0 if no suggestion count is found
+        System.out.println("❌ Could not find player file for " + playerName);
+        return 0;
     }
 
     public static void setPlayerSuggestionCount(String playerName, int num){
         File playerFile = getPlayerFileByName(playerName);
         if (playerFile != null) {
             FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
-            playerConfig.set("SuggestionLimit", num);
+            playerConfig.set("SuggestionsLimit", num);
             try {
                 playerConfig.save(playerFile);
             } catch (IOException e) {
@@ -82,15 +85,27 @@ public class PlayerManager {
     }
 
     public static File getPlayerFileByName(String playerName) {
-        File playerDataFolder = new File("SuggestionData/PlayerData");
-        if (playerDataFolder.exists() && playerDataFolder.isDirectory()) {
-            for (File file : playerDataFolder.listFiles()) {
-                if (file.isFile() && file.getName().equalsIgnoreCase(playerName + ".yml")) {
-                    return file;
-                }
+        File playerDataFolder = new File(SuggestionsX.getInstance().getDataFolder(), "SuggestionData/PlayerData");
+
+        if (!playerDataFolder.exists() || !playerDataFolder.isDirectory()) {
+            System.out.println("❌ ERROR: PlayerData folder is missing or not a directory.");
+            System.out.println("Expected Path: " + playerDataFolder.getAbsolutePath());
+            return null;
+        }
+
+        System.out.println("📂 Checking folder: " + playerDataFolder.getAbsolutePath());
+
+        for (File file : playerDataFolder.listFiles()) {
+            System.out.println("🔍 Found file: " + file.getName());
+
+            if (file.isFile() && file.getName().equalsIgnoreCase(playerName + ".yml")) {
+                System.out.println("✅ Matched player file: " + file.getAbsolutePath());
+                return file;
             }
         }
-        return null; // Return null if no matching file is found
+
+        System.out.println("❌ No matching file found for player: " + playerName);
+        return null;
     }
 
     public static Suggestion getSuggestionByCreator(String creatorName) {
@@ -112,7 +127,7 @@ public class PlayerManager {
         UUID playerUUID = getPlayerUUIDByName(playerName);
 
         // Add the suggestion UUID to the player's file
-        File playerFile = getPlayerFile(playerUUID);
+        File playerFile = ConfigManager.getPlayerFile(playerUUID, plugin);
         if (playerFile != null) {
             FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
             List<String> suggestions = playerConfig.getStringList("suggestions");
@@ -135,7 +150,7 @@ public class PlayerManager {
         UUID playerUUID = getPlayerUUIDByName(playerName);
 
         // Remove the suggestion UUID from the player's file
-        File playerFile = getPlayerFile(playerUUID);
+        File playerFile = ConfigManager.getPlayerFile(playerUUID, plugin);
         if (playerFile != null) {
             FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
             List<String> suggestions = playerConfig.getStringList("suggestions");
@@ -154,32 +169,39 @@ public class PlayerManager {
         }
 
     }
+    //maybe binary search?
 
-    public static File getPlayerFile(UUID playerUUID) {
-        File playerDataFolder = new File("SuggestionData/PlayerData");
-        if (playerDataFolder.exists() && playerDataFolder.isDirectory()) {
-            for (File file : playerDataFolder.listFiles()) {
-                if (file.isFile() && file.getName().endsWith(".yml")) {
-                    FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(file);
-                    String uuid = playerConfig.getString("uuid");
-                    if (playerUUID.toString().equals(uuid)) {
-                        return file;
-                    }
+    public static List<Suggestion> getPlayerSuggestions(File playerFile) {
+        if (!playerFile.exists()) {
+            System.out.println("❌ Player file does not exist: " + playerFile.getName());
+            return Collections.emptyList();
+        }
+
+        FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
+        List<String> suggestionUUIDs = playerConfig.getStringList("suggestions");
+
+        if (suggestionUUIDs.isEmpty()) {
+            System.out.println("ℹ️ No suggestions found in player file: " + playerFile.getName());
+            return Collections.emptyList();
+        }
+
+        List<Suggestion> playerSuggestions = new ArrayList<>();
+        for (String uuidString : suggestionUUIDs) {
+            try {
+                UUID suggUUID = UUID.fromString(uuidString);
+                Suggestion suggestion = ConfigManager.getSuggestionByUUID(suggUUID);
+
+                if (suggestion != null) {
+                    playerSuggestions.add(suggestion);
+                    System.out.println("✅ Retrieved suggestion: " + suggestion.getTitle() + " (UUID: " + suggUUID + ")");
+                } else {
+                    System.out.println("❌ No suggestion found for UUID: " + suggUUID);
                 }
+            } catch (IllegalArgumentException e) {
+                System.out.println("❌ Invalid UUID format in player file: " + uuidString);
             }
         }
-        return null; // Return null if no matching file is found
-    }
-
-    public static List<String> getPlayerSuggestions(File playerFile) {
-        if (playerFile.exists()) {
-            FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
-            List<String> playerSuggestions = playerConfig.getStringList("suggestions");
-            if (!playerSuggestions.isEmpty()) {
-                return playerSuggestions;
-            }
-        }
-        return Collections.emptyList();
+        return playerSuggestions;
     }
 
 

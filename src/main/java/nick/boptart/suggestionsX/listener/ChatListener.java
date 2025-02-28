@@ -1,6 +1,5 @@
 package nick.boptart.suggestionsX.listener;
 
-
 import nick.boptart.suggestionsX.util.SuggestionCreation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

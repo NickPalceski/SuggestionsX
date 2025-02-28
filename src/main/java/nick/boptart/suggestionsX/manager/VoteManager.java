@@ -1,14 +1,9 @@
 package nick.boptart.suggestionsX.manager;
 
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import nick.boptart.suggestionsX.util.Suggestion;
 import org.bukkit.event.inventory.ClickType;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 
 public class VoteManager {

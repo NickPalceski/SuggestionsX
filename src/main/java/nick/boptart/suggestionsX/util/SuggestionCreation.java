@@ -1,5 +1,6 @@
 package nick.boptart.suggestionsX.util;
 
+import nick.boptart.suggestionsX.SuggestionsX;
 import nick.boptart.suggestionsX.manager.ConfigManager;
 import nick.boptart.suggestionsX.manager.PlayerManager;
 import org.bukkit.ChatColor;
@@ -57,20 +58,21 @@ public class SuggestionCreation {
                 Suggestion suggestion = new Suggestion(
                         suggestionData.get("title"),
                         suggestionData.get("description"),
-                        player.getName() // Use the player's name as the suggestor
+                        player.getName() // Use the player's name as the suggester
                 );
 
                 ConfigManager.getPendingSuggestions().add(suggestion);
+                ConfigManager.savePendingSuggestions();
                 // Add the suggestion UUID to the player's file
-                File playerFile = PlayerManager.getPlayerFile(playerUUID);
+                File playerFile = ConfigManager.getPlayerFile(playerUUID, SuggestionsX.getInstance());
                 if (playerFile != null) {
                     FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
                     List<String> suggestions = playerConfig.getStringList("suggestions");
                     suggestions.add(suggestion.getUniqueID().toString());
                     playerConfig.set("suggestions", suggestions);
 
-                    int suggestionCount = playerConfig.getInt("suggestionCount");
-                    playerConfig.set("suggestionCount", suggestionCount - 1);
+                    int suggestionCount = playerConfig.getInt("suggestionsLimit", 0);
+                    playerConfig.set("suggestionsLimit", suggestionCount - 1);
 
                     try {
                         playerConfig.save(playerFile);
@@ -83,8 +85,6 @@ public class SuggestionCreation {
                 player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Suggestion pending:" + ChatColor.WHITE + " " + suggestion.getTitle());
                 player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.8f, 0.8f);
                 playersAddingSuggestion.remove(playerUUID);
-
-                ConfigManager.savePendingSuggestions();
                 break;
 
             default:
@@ -117,7 +117,7 @@ public class SuggestionCreation {
                 player.playSound(player, Sound.BLOCK_ANVIL_USE, 0.8f, 0.8f);
                 suggestionData.put("description", message);
                 player.sendMessage(ChatColor.GREEN + "Description set to:" + ChatColor.WHITE + " " + message);
-                player.sendMessage(ChatColor.AQUA + "Type " + ChatColor.BOLD + "suggestor's name (Case Sensitive).");
+                player.sendMessage(ChatColor.AQUA + "Type " + ChatColor.BOLD + "suggester's name (Case Sensitive).");
                 player.sendMessage("-----------------------------------------------");
                 suggestionData.put("stage", "playerName");
                 break;
@@ -134,15 +134,15 @@ public class SuggestionCreation {
                 );
                 ConfigManager.getSuggestions().add(suggestion);
                 // Add the suggestion UUID to the player's file
-                File suggestorFile = PlayerManager.getPlayerFileByName(suggestionData.get("playerName"));
-                if (suggestorFile != null) {
-                    FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(suggestorFile);
+                File suggesterFile = PlayerManager.getPlayerFileByName(suggestionData.get("playerName"));
+                if (suggesterFile != null) {
+                    FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(suggesterFile);
                     List<String> suggestions = playerConfig.getStringList("suggestions");
                     suggestions.add(suggestion.getUniqueID().toString());
                     playerConfig.set("suggestions", suggestions);
 
                     try {
-                        playerConfig.save(suggestorFile);
+                        playerConfig.save(suggesterFile);
                     } catch (IOException e) {
                         e.printStackTrace();
                         player.sendMessage("§cFailed to save your suggestion.");
@@ -150,7 +150,7 @@ public class SuggestionCreation {
 
                 }
                 else{
-                    player.sendMessage("§cCould not find suggestor's file.");
+                    player.sendMessage("§cCould not find suggester's file.");
                 }
                 player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Suggestion added:" + ChatColor.WHITE + " " + suggestion.getTitle());
                 player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.8f, 0.8f);

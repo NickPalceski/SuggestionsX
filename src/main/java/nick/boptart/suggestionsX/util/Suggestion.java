@@ -4,6 +4,7 @@ import nick.boptart.suggestionsX.manager.ConfigManager;
 import org.bukkit.ChatColor;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -109,8 +110,16 @@ public class Suggestion {
     }
 
     public static Suggestion getSuggestionByTitle(String title) {
-        Suggestion suggestion = ConfigManager.getPendingSuggestions().stream()
-                .filter(s -> s.getTitle().equals(title))
+
+        List<Suggestion> pendingSuggestions = ConfigManager.getPendingSuggestions();
+        System.out.println("Pending suggestions count: " + pendingSuggestions.size());
+
+        for (Suggestion s : pendingSuggestions) {
+            System.out.println("Checking suggestion title: " + s.getTitle());
+        }
+
+        Suggestion suggestion = pendingSuggestions.stream()
+                .filter(s -> s.getTitle().equalsIgnoreCase(title))
                 .findFirst()
                 .orElse(null);
 

@@ -34,7 +34,7 @@ public class ReloadSuggestionsCommand implements CommandExecutor {
         ConfigManager.getConfigManager().loadConfig();
         sender.sendMessage(ChatColor.GREEN + "SuggestionsX config reloaded!");
 
-        ConfigManager.reloadSuggestionDataFiles();
+        SuggestionsX.getConfigManager().reloadSuggestionDataFiles();
         sender.sendMessage(ChatColor.GREEN + "SuggestionsX suggestion data reloaded!");
         return true;
     }

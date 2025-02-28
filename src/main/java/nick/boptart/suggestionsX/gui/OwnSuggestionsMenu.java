@@ -1,8 +1,10 @@
 package nick.boptart.suggestionsX.gui;
 
+import nick.boptart.suggestionsX.SuggestionsX;
 import nick.boptart.suggestionsX.manager.ConfigManager;
 import nick.boptart.suggestionsX.manager.PlayerManager;
 import nick.boptart.suggestionsX.util.Suggestion;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -12,11 +14,18 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class OwnSuggestionsMenu {
+
+    public OwnSuggestionsMenu(SuggestionsX plugin) {
+        this.plugin = plugin;
+    }
+
+    private final SuggestionsX plugin;
 
 
 
@@ -45,16 +54,25 @@ public class OwnSuggestionsMenu {
         backMenu.setItemMeta(glassMeta);
         gui.setItem(size - 5, backMenu); // add to middle last row
 
-        //get player UUID
+        //get player UUID and File
         UUID playerUUID = player.getUniqueId();
+        File playerFile = ConfigManager.getPlayerFile(playerUUID, plugin);
+        if (playerFile == null) {
+            player.sendMessage(ChatColor.RED + "Error: Could not find your player file.");
+            Bukkit.getLogger().severe("Player file is NULL for " + player.getName() + " (UUID: " + playerUUID + ")");
+            return gui;
+        }
 
-        //get player  file and their suggestion's UUID
-        List <String> playerSugg= PlayerManager.getPlayerSuggestions(PlayerManager.getPlayerFile(playerUUID));
+        // Now safely retrieve the player's suggestions
+        List<Suggestion> playerSugg = PlayerManager.getPlayerSuggestions(playerFile);
+        if (playerSugg.isEmpty()){
+            player.sendMessage(ChatColor.YELLOW + "You have no suggestions.");
+        }
 
         //get all suggestion info
-        for (int i = startIndex; i < playerSugg.size() && i < endIndex; i++) {
-            UUID suggUUID = UUID.fromString(playerSugg.get(i));
-            Suggestion suggestion = ConfigManager.getSuggestionByUUID(suggUUID);
+        for (int i = 0; i < playerSugg.size(); i++) {
+            Suggestion suggestion = playerSugg.get(i);
+
             ItemStack paper = new ItemStack(Material.WRITTEN_BOOK);
             ItemMeta meta = paper.getItemMeta();
             meta.setDisplayName(ChatColor.YELLOW + suggestion.getTitle());

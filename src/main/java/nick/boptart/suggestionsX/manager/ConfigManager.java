@@ -27,6 +27,14 @@ public class ConfigManager {
     private static final List<Suggestion> suggestions = new ArrayList<>();
     private static final List<Suggestion> pendingSuggestions = new ArrayList<>();
 
+    private final Set<String> validGuiTitles;
+
+    public Map<UUID, String> getPlayerFileCache() {
+        return playerFileCache;
+    }
+
+    private final Map<UUID, String> playerFileCache = new HashMap<>();
+
     private int defaultSuggestionsLimit;
 
     private String playerMenuTitle;
@@ -40,15 +48,18 @@ public class ConfigManager {
 
     public ConfigManager(JavaPlugin plugin) {
         this.plugin = plugin;
+        this.validGuiTitles = new HashSet<>();
         loadConfig();
         createSuggestionDataFiles(plugin);
-        createPlayerDataFiles(plugin);
+        createPlayerDataFolder(plugin);
     }
 
-    public static void initialize(ConfigManager configManager) {
-        ConfigManager.configManager = configManager;
-        ConfigManager.loadSuggestions();
-        ConfigManager.loadPendingSuggestions();
+    public void initialize() {
+        configManager = this;
+        this.loadSuggestions();
+        this.loadPendingSuggestions();
+        this.loadPlayerCache();
+
     }
 
     public static ConfigManager getConfigManager() { return configManager; }
@@ -81,19 +92,38 @@ public class ConfigManager {
 
 
     public static Set<String> getGUITitles() {
-        Set<String> guiTitles = new HashSet<>();
+
         SuggestionsX.getInstance().getConfig().getConfigurationSection("gui").getValues(false).forEach((key, value) -> {
             String title = ChatColor.translateAlternateColorCodes('&', value.toString());
-            guiTitles.add(ChatColor.stripColor(title));
+            configManager.validGuiTitles.add(ChatColor.stripColor(title));
         });
-        return guiTitles;
+        return configManager.validGuiTitles;
     }
-    
+
     public static Suggestion getSuggestionByUUID(UUID uuid) {
-        return ConfigManager.getSuggestions().stream()
-                .filter(suggestion -> suggestion.getUniqueID().equals(uuid))
-                .findFirst()
-                .orElse(null);
+        FileConfiguration pendingConfig = configManager.getPendingConfig();
+        FileConfiguration suggestionsConfig = configManager.getSuggestionsConfig();
+
+        String path = "pending." + uuid.toString();
+        if (pendingConfig.contains(path)) {
+            return new Suggestion(
+                    pendingConfig.getString(path + ".title"),
+                    pendingConfig.getString(path + ".description"),
+                    pendingConfig.getString(path + ".suggester")
+            );
+        }
+
+        path = "suggestions." + uuid;
+        if (suggestionsConfig.contains(path)) {
+            return new Suggestion(
+                    suggestionsConfig.getString(path + ".title"),
+                    suggestionsConfig.getString(path + ".description"),
+                    suggestionsConfig.getString(path + ".suggester")
+            );
+        }
+
+        System.out.println("❌ No suggestion found for UUID: " + uuid);
+        return null;
     }
 
 
@@ -109,6 +139,21 @@ public class ConfigManager {
         adminSuggestionsTitle = config.getString("gui.admin-suggestions-title");
         pendingMenuTitle = config.getString("gui.pending-menu-title");
         adminMenuTitle = config.getString("gui.admin-menu-title");
+    }
+    // Load player cache from player files ( faster access than searching through files )
+    public void loadPlayerCache() {
+        File playerDataFolder = new File(plugin.getDataFolder(), "SuggestionData/PlayerData");
+        if (!playerDataFolder.exists()) return;
+
+        for (File file : playerDataFolder.listFiles()) {
+            if (file.isFile() && file.getName().endsWith(".yml")) {
+                FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+                String storedUUID = config.getString("uuid");
+                if (storedUUID != null) {
+                    playerFileCache.put(UUID.fromString(storedUUID), file.getName());
+                }
+            }
+        }
     }
 
     public static void createSuggestionDataFiles(JavaPlugin plugin) {
@@ -139,27 +184,113 @@ public class ConfigManager {
         pendingConfig = YamlConfiguration.loadConfiguration(pendingFile);
     }
 
-    public static void createPlayerDataFiles(JavaPlugin plugin) {
+    public static void createPlayerDataFolder(JavaPlugin plugin) {
         File dataFolder = new File(plugin.getDataFolder(), "SuggestionData/PlayerData");
         if (!dataFolder.exists()) {
             dataFolder.mkdirs();
         }
     }
-    //TODO:If playerFile does not exist by playerName, check if their UUID is in any of the playerFiles before creating a new one.
-    // (In case player changes name).
-    //  If a playerFile exists with their UUID and not their current name, rename the file to their current name.
+
     public static void createPlayerFile(Player player, JavaPlugin plugin) {
-        File playerFile = new File(plugin.getDataFolder(), "SuggestionData/PlayerData/" + player.getName() + ".yml");
-        if (!playerFile.exists()) {
+        File playerDataFolder = new File(plugin.getDataFolder(), "SuggestionData/PlayerData");
+
+        if (!playerDataFolder.exists()) {
+            if (playerDataFolder.mkdirs()) {
+                System.out.println("✅ Created PlayerData folder: " + playerDataFolder.getAbsolutePath());
+            } else {
+                System.out.println("❌ FAILED to create PlayerData folder!");
+                return;
+            }
+        }
+
+        UUID playerUUID = player.getUniqueId();
+        String correctFileName = player.getName() + ".yml";
+        File correctPlayerFile = new File(playerDataFolder, correctFileName);
+        File existingFile = null;
+
+        // **Check if a file already exists for the player's UUID**
+        for (File file : playerDataFolder.listFiles()) {
+            if (file.isFile() && file.getName().endsWith(".yml")) {
+                FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(file);
+                String storedUUID = playerConfig.getString("uuid");
+
+                if (storedUUID != null && storedUUID.equals(playerUUID.toString())) {
+                    existingFile = file;
+                    break;
+                }
+            }
+        }
+
+        // **Rename file if the player changed names**
+        if (existingFile != null && !existingFile.getName().equals(correctFileName)) {
+            File newFile = new File(playerDataFolder, correctFileName);
+            if (existingFile.renameTo(newFile)) {
+                System.out.println("🔄 Renamed player file: " + existingFile.getName() + " → " + correctFileName);
+            } else {
+                System.out.println("❌ Failed to rename player file!");
+                return;
+            }
+        }
+
+        // **Create file if it does not exist**
+        if (!correctPlayerFile.exists()) {
             try {
-                playerFile.createNewFile();
-                FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
-                playerConfig.set("uuid", player.getUniqueId().toString());
-                playerConfig.set("suggestionsLimit", configManager.getDefaultSuggestionsLimit());
-                playerConfig.set("suggestions", new ArrayList<String>());
-                playerConfig.save(playerFile);
+                if (correctPlayerFile.createNewFile()) {
+                    FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(correctPlayerFile);
+                    playerConfig.set("uuid", playerUUID.toString());
+                    playerConfig.set("suggestionsLimit", ConfigManager.getConfigManager().getDefaultSuggestionsLimit());
+                    playerConfig.set("suggestions", new ArrayList<>());
+                    playerConfig.save(correctPlayerFile);
+
+                    System.out.println("✅ Created new player file: " + correctFileName);
+                } else {
+                    System.out.println("❌ Failed to create player file: " + correctFileName);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
+                System.out.println("❌ IO Exception while creating player file!");
+            }
+        } else {
+            System.out.println("ℹ️ Player file already exists: " + correctFileName);
+        }
+
+        // Update playerFileCache Dynamically
+        configManager.playerFileCache.put(playerUUID, correctFileName);
+        System.out.println("📥 Added to playerFileCache: " + playerUUID + " → " + correctFileName);
+
+    }
+
+    public static File getPlayerFile(UUID playerUUID, JavaPlugin plugin) {
+        String fileName = configManager.playerFileCache.get(playerUUID);
+        if (fileName != null) {
+            return new File(plugin.getDataFolder(), "SuggestionData/PlayerData/" + fileName);
+        }
+        return null;
+    }
+
+    public static void savePlayerFiles() {
+        File playerDataFolder = new File(SuggestionsX.getInstance().getDataFolder(), "SuggestionData/PlayerData");
+
+        if (!playerDataFolder.exists()) {
+
+            createPlayerDataFolder(SuggestionsX.getInstance());
+
+        } else if (!playerDataFolder.isDirectory()) {
+            System.out.println("❌ ERROR: PlayerData folder is missing or not a directory.");
+            System.out.println("Expected Path: " + playerDataFolder.getAbsolutePath());
+            return;
+        }
+
+        for (File file : playerDataFolder.listFiles()) {
+            if (file.isFile() && file.getName().endsWith(".yml")) {
+                FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(file);
+
+                try {
+                    playerConfig.save(file);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.out.println("❌ Failed to save player file: " + file.getName());
+                }
             }
         }
     }
@@ -168,20 +299,24 @@ public class ConfigManager {
 
     public static void saveSuggestions() {
         FileConfiguration suggestionsConfig = configManager.getSuggestionsConfig();
-        suggestionsConfig.set("suggestions", null); // Clear existing data
+
+        Set<String> existingKeys = suggestionsConfig.getConfigurationSection("suggestions").getKeys(false);
         for (Suggestion suggestion : suggestions) {
             String path = "suggestions." + suggestion.getUniqueID();
-            suggestionsConfig.set(path + ".title", suggestion.getTitle());
-            suggestionsConfig.set(path + ".description", suggestion.getDescription());
-            suggestionsConfig.set(path + ".suggestor", suggestion.getCreator());
-            suggestionsConfig.set(path + ".totalVotes", suggestion.totalVotes);
-            suggestionsConfig.set(path + ".posVotes", suggestion.posVotes);
-            suggestionsConfig.set(path + ".negVotes", suggestion.negVotes);
 
-            //Add voters to the Set of the suggestion(s)?
-            suggestionsConfig.set(path + ".voters", suggestion.getVoters());
+            if (!existingKeys.contains(suggestion.getUniqueID().toString())) {
 
+                suggestionsConfig.set(path + ".title", suggestion.getTitle());
+                suggestionsConfig.set(path + ".description", suggestion.getDescription());
+                suggestionsConfig.set(path + ".suggester", suggestion.getCreator());
+                suggestionsConfig.set(path + ".totalVotes", suggestion.totalVotes);
+                suggestionsConfig.set(path + ".posVotes", suggestion.posVotes);
+                suggestionsConfig.set(path + ".negVotes", suggestion.negVotes);
+                //Add voters to the Set of the suggestion(s)?
+                suggestionsConfig.set(path + ".voters", suggestion.getVoters());
+            }
         }
+
         try {
             suggestionsConfig.save(suggestionsFile);
         } catch (IOException e) {
@@ -192,34 +327,39 @@ public class ConfigManager {
 
     public static void savePendingSuggestions() {
         FileConfiguration pendingConfig = configManager.getPendingConfig();
-        pendingConfig.set("pending", null); // Clear existing data
+
+        // Load existing suggestions (UUID) from the file
+        Set<String> existingKeys = pendingConfig.getConfigurationSection("pending").getKeys(false);
+
         for (Suggestion suggestion : pendingSuggestions) {
             String path = "pending." + suggestion.getUniqueID();
-            pendingConfig.set(path + ".title", suggestion.getTitle());
-            pendingConfig.set(path + ".description", suggestion.getDescription());
-            pendingConfig.set(path + ".suggestor", suggestion.getCreator());
+            if (!existingKeys.contains(suggestion.getUniqueID().toString())) {
+                pendingConfig.set(path + ".title", suggestion.getTitle());
+                pendingConfig.set(path + ".description", suggestion.getDescription());
+                pendingConfig.set(path + ".suggester", suggestion.getCreator());
+            }
         }
 
         try {
-            suggestionsConfig.save(pendingFile);
+            pendingConfig.save(pendingFile);
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println(ChatColor.RED + "Could not save pending suggestions file!");
         }
     }
 
-    static void loadSuggestions() {
+     void loadSuggestions() {
         FileConfiguration suggestionsConfig = configManager.getSuggestionsConfig();
         if (suggestionsConfig.contains("suggestions")) {
             for (String key : suggestionsConfig.getConfigurationSection("suggestions").getKeys(false)) {
                 String title = suggestionsConfig.getString("suggestions." + key + ".title");
                 String description = suggestionsConfig.getString("suggestions." + key + ".description");
-                String suggestor = suggestionsConfig.getString("suggestions." + key + ".suggestor");
+                String suggester = suggestionsConfig.getString("suggestions." + key + ".suggester");
                 int totalVotes = suggestionsConfig.getInt("suggestions." + key + ".totalVotes");
                 int posVotes = suggestionsConfig.getInt("suggestions." + key + ".posVotes");
                 int negVotes = suggestionsConfig.getInt("suggestions." + key + ".negVotes");
 
-                Suggestion suggestion = new Suggestion(title, description, suggestor);
+                Suggestion suggestion = new Suggestion(title, description, suggester);
                 suggestion.totalVotes = totalVotes;
                 suggestion.posVotes = posVotes;
                 suggestion.negVotes = negVotes;
@@ -228,21 +368,21 @@ public class ConfigManager {
         }
     }
 
-    static void loadPendingSuggestions() {
+     void loadPendingSuggestions() {
         FileConfiguration pendingConfig = configManager.getPendingConfig();
         if (pendingConfig.contains("pending")) {
             for (String key : pendingConfig.getConfigurationSection("pending").getKeys(false)) {
                 String title = pendingConfig.getString("pending." + key + ".title");
                 String description = pendingConfig.getString("pending." + key + ".description");
-                String suggestor = pendingConfig.getString("pending." + key + ".suggestor");
-                Suggestion suggestion = new Suggestion(title, description, suggestor);
+                String suggester = pendingConfig.getString("pending." + key + ".suggester");
+                Suggestion suggestion = new Suggestion(title, description, suggester);
                 pendingSuggestions.add(suggestion);
             }
         }
     }
 
-    public static void reloadSuggestionDataFiles() {
-        createSuggestionDataFiles(ConfigManager.configManager.plugin);
+    public void reloadSuggestionDataFiles() {
+        createSuggestionDataFiles(plugin);
         loadSuggestions();
         loadPendingSuggestions();
     }
