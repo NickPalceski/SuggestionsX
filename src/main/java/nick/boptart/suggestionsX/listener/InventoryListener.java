@@ -95,6 +95,8 @@ public class InventoryListener implements Listener {
 
 
     void handleOtherMenuClicks(ItemStack clickedItem, Player player, InventoryClickEvent event) {
+
+
         if (clickedItem.getType() == Material.OAK_DOOR && clickedItem.getItemMeta().getDisplayName().equals("Go Back")) {
             player.closeInventory();
             //TODO: Change permission to something like suggestionsx.mainmenu.admin
@@ -114,11 +116,11 @@ public class InventoryListener implements Listener {
 
             //get suggestion title.
             String suggestionTitle = ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName());
-            Suggestion suggestion = Suggestion.getSuggestionByTitle(suggestionTitle);
+            Suggestion clickedSuggestion = Suggestion.getSuggestionByTitle(suggestionTitle);
 
             switch (click) {
                 case LEFT, RIGHT, SHIFT_RIGHT:
-                    VoteManager.handleVote(player, suggestion, click);
+                    VoteManager.handleVote(player, clickedSuggestion, click);
                     break;
 
                 default:
@@ -135,24 +137,22 @@ public class InventoryListener implements Listener {
             if (player.hasPermission("suggestions.admin")) {
                 //get suggestion title.
                 String suggestionTitle = ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName());
+                Suggestion clickedSuggestion = Suggestion.getSuggestionByTitle(suggestionTitle);
 
                 switch (click) {
                     case LEFT:
                         //approve suggestion
-                        Suggestion.getSuggestionByTitle(suggestionTitle).updateStatus(1);
+                        clickedSuggestion.updateStatus(1);
 
                         //remove from pending list and add to suggestions list.
-                        ConfigManager.getPendingSuggestions().remove(Suggestion.getSuggestionByTitle(suggestionTitle));
-                        ConfigManager.getSuggestions().add(Suggestion.getSuggestionByTitle(suggestionTitle));
+                        ConfigManager.getPendingSuggestions().remove(clickedSuggestion);
+                        ConfigManager.removeSuggestionFromPendingConfig(clickedSuggestion);
 
-                        //add suggestion UUID to suggester's file.
-                        ConfigManager.getPlayerFile(PlayerManager.getCreatorUUID(Suggestion.getSuggestionByTitle(suggestionTitle).getCreator()), plugin);
-                        PlayerManager.addSuggestionToPlayer(Suggestion.getSuggestionByTitle(suggestionTitle), Suggestion.getSuggestionByTitle(suggestionTitle).getCreator());
+                        ConfigManager.getSuggestions().add(clickedSuggestion);
 
                         //save changes?
                         ConfigManager.savePendingSuggestions();
                         ConfigManager.saveSuggestions();
-                        PlayerManager.savePlayerFile(ConfigManager.getPlayerFile(PlayerManager.getCreatorUUID(Suggestion.getSuggestionByTitle(suggestionTitle).getCreator()), plugin));
 
                         break;
                     case RIGHT:
@@ -160,7 +160,8 @@ public class InventoryListener implements Listener {
                         Suggestion.getSuggestionByTitle(suggestionTitle).updateStatus(2);
 
                         //remove from pending list
-                        ConfigManager.getPendingSuggestions().remove(Suggestion.getSuggestionByTitle(suggestionTitle));
+                        ConfigManager.getPendingSuggestions().remove(clickedSuggestion);
+                        ConfigManager.removeSuggestionFromPendingConfig(clickedSuggestion);
 
                         //save changes?
                         ConfigManager.savePendingSuggestions();
@@ -181,47 +182,51 @@ public class InventoryListener implements Listener {
             //get suggestion title.
             String suggestionTitle = ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName());
             plugin.getLogger().info("Stripped suggestion title: " + suggestionTitle);
+            Suggestion clickedSuggestion = Suggestion.getSuggestionByTitle(suggestionTitle);
 
-            int currStatus = Suggestion.getSuggestionByTitle(ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName())).getStatus();
+            if (clickedSuggestion == null) {
+                System.out.println("❌ Error: clickedSuggestion is null for title: " + suggestionTitle);
+                player.sendMessage(ChatColor.RED + "Error: Suggestion not found.");
+                return;
+            }
+
+            System.out.println("🗑 Preparing to remove: " + clickedSuggestion.getTitle() + " (UUID: " + clickedSuggestion.getUniqueID() + ")");
+            System.out.println("📂 Player File: " + ConfigManager.getPlayerFile(PlayerManager.getCreatorUUID(clickedSuggestion.getCreator()), plugin));
+
+            int currStatus = clickedSuggestion.getStatus();
 
             if (click == ClickType.LEFT) {
-                //Check suggestion status, perform action based on status.
-                switch (currStatus){
-                    case 0:     //pending
+                switch (currStatus) {
+                    case 0:  // Pending
+                        System.out.println("🗑 Removing pending suggestion...");
+                        boolean removed = ConfigManager.getPendingSuggestions().remove(clickedSuggestion);
+                        System.out.println("📊 Pending suggestions after removal: " + ConfigManager.getPendingSuggestions().size());
+                        System.out.println(removed ? "✅ Suggestion removed from pending list." : "❌ Failed to remove suggestion from pending list.");
 
-                        //remove suggestion from pending suggestions
-                        ConfigManager.getPendingSuggestions().remove(Suggestion.getSuggestionByTitle(suggestionTitle));
+                        System.out.println("📂 Removing from player file...");
+                        PlayerManager.removeSuggestionFromPlayer(clickedSuggestion, clickedSuggestion.getCreator());
 
-                        //remove suggestion UUID from suggester's file
-                        PlayerManager.removeSuggestionFromPlayer(Suggestion.getSuggestionByTitle(suggestionTitle), Suggestion.getSuggestionByTitle(suggestionTitle).getCreator());
-
-                        //save changes?
                         ConfigManager.savePendingSuggestions();
-                        PlayerManager.savePlayerFile(ConfigManager.getPlayerFile(PlayerManager.getCreatorUUID(Suggestion.getSuggestionByTitle(suggestionTitle).getCreator()), plugin));
+                        PlayerManager.savePlayerFile(ConfigManager.getPlayerFile(PlayerManager.getCreatorUUID(clickedSuggestion.getCreator()), plugin));
                         break;
 
-                    case 1:     //approved
+                    case 1: // Approved
+                        System.out.println("🗑 Removing approved suggestion...");
+                        boolean removedApproved = ConfigManager.getSuggestions().remove(clickedSuggestion);
+                        System.out.println(removedApproved ? "✅ Suggestion removed from suggestions list." : "❌ Failed to remove suggestion from suggestions list.");
 
-                        //TODO: Pend approval for deletion (delete instantly for now)
-                        ConfigManager.getSuggestions().remove(Suggestion.getSuggestionByTitle(suggestionTitle));
+                        PlayerManager.removeSuggestionFromPlayer(clickedSuggestion, clickedSuggestion.getCreator());
 
-                        //remove suggestion UUID from suggester's file
-                        PlayerManager.removeSuggestionFromPlayer(Suggestion.getSuggestionByTitle(suggestionTitle), Suggestion.getSuggestionByTitle(suggestionTitle).getCreator());
-
-                        //save changes?
-                        ConfigManager.savePendingSuggestions();
-                        PlayerManager.savePlayerFile(ConfigManager.getPlayerFile(PlayerManager.getCreatorUUID(Suggestion.getSuggestionByTitle(suggestionTitle).getCreator()), plugin));
-
+                        ConfigManager.saveSuggestions();
+                        PlayerManager.savePlayerFile(ConfigManager.getPlayerFile(PlayerManager.getCreatorUUID(clickedSuggestion.getCreator()), plugin));
                         break;
 
-                    case 2:     //denied
+                    case 2: // Denied
+                        System.out.println("🗑 Removing denied suggestion...");
+                        PlayerManager.removeSuggestionFromPlayer(clickedSuggestion, clickedSuggestion.getCreator());
 
-                        //remove suggestion from suggesters file
-                        PlayerManager.removeSuggestionFromPlayer(Suggestion.getSuggestionByTitle(suggestionTitle), Suggestion.getSuggestionByTitle(suggestionTitle).getCreator());
-
-                        //refund suggesters point
-                        int playerSuggestionCount = PlayerManager.getPlayerSuggestionCount(String.valueOf(player));
-                        PlayerManager.setPlayerSuggestionCount(String.valueOf(player), playerSuggestionCount + 1);
+                        int playerSuggestionCount = PlayerManager.getPlayerSuggestionCount(clickedSuggestion.getCreator());
+                        PlayerManager.setPlayerSuggestionCount(clickedSuggestion.getCreator(), playerSuggestionCount + 1);
                         break;
 
                     default:

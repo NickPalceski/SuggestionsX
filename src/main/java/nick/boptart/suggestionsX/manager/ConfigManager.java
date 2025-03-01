@@ -24,10 +24,34 @@ public class ConfigManager {
     private static FileConfiguration pendingConfig;
 
 
-    private static final List<Suggestion> suggestions = new ArrayList<>();
-    private static final List<Suggestion> pendingSuggestions = new ArrayList<>();
+    private  final List<Suggestion> suggestions = new ArrayList<>();
+    private  final List<Suggestion> pendingSuggestions = new ArrayList<>();
 
     private final Set<String> validGuiTitles;
+
+    public static void removeSuggestionFromPendingConfig(Suggestion suggestion) {
+        FileConfiguration pendingConfig = configManager.getPendingConfig();
+        pendingConfig.set("pending." + suggestion.getUniqueID(), null);
+
+        try {
+            pendingConfig.save(suggestionsFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println(ChatColor.RED + "Could not save suggestions file!");
+        }
+    }
+
+    public static void removeSuggestionFromConfig(Suggestion clickedSuggestion) {
+        FileConfiguration suggestionsConfig = configManager.getSuggestionsConfig();
+        suggestionsConfig.set("suggestions." + clickedSuggestion.getUniqueID(), null);
+
+        try {
+            suggestionsConfig.save(suggestionsFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println(ChatColor.RED + "Could not save suggestions file!");
+        }
+    }
 
     public Map<UUID, String> getPlayerFileCache() {
         return playerFileCache;
@@ -65,7 +89,7 @@ public class ConfigManager {
     public static ConfigManager getConfigManager() { return configManager; }
 
     public static List<Suggestion> getSuggestions() {
-        return suggestions;
+        return configManager.suggestions;
     }
 
     public FileConfiguration getSuggestionsConfig() { return suggestionsConfig; }
@@ -87,7 +111,7 @@ public class ConfigManager {
     public String getAdminSuggestionsTitle() { return adminSuggestionsTitle; }
 
     public static List<Suggestion> getPendingSuggestions() {
-        return pendingSuggestions;
+        return configManager.pendingSuggestions;
     }
 
 
@@ -107,6 +131,8 @@ public class ConfigManager {
         String path = "pending." + uuid.toString();
         if (pendingConfig.contains(path)) {
             return new Suggestion(
+                    //get suggestion uuid
+                    uuid,
                     pendingConfig.getString(path + ".title"),
                     pendingConfig.getString(path + ".description"),
                     pendingConfig.getString(path + ".suggester")
@@ -116,6 +142,7 @@ public class ConfigManager {
         path = "suggestions." + uuid;
         if (suggestionsConfig.contains(path)) {
             return new Suggestion(
+                    uuid,
                     suggestionsConfig.getString(path + ".title"),
                     suggestionsConfig.getString(path + ".description"),
                     suggestionsConfig.getString(path + ".suggester")
@@ -301,7 +328,7 @@ public class ConfigManager {
         FileConfiguration suggestionsConfig = configManager.getSuggestionsConfig();
 
         Set<String> existingKeys = suggestionsConfig.getConfigurationSection("suggestions").getKeys(false);
-        for (Suggestion suggestion : suggestions) {
+        for (Suggestion suggestion : configManager.suggestions) {
             String path = "suggestions." + suggestion.getUniqueID();
 
             if (!existingKeys.contains(suggestion.getUniqueID().toString())) {
@@ -328,23 +355,30 @@ public class ConfigManager {
     public static void savePendingSuggestions() {
         FileConfiguration pendingConfig = configManager.getPendingConfig();
 
-        // Load existing suggestions (UUID) from the file
-        Set<String> existingKeys = pendingConfig.getConfigurationSection("pending").getKeys(false);
+        // ✅ Ensure "pending" section exists before modifying it
+        if (!pendingConfig.contains("pending")) {
+            pendingConfig.createSection("pending");
+        }
 
-        for (Suggestion suggestion : pendingSuggestions) {
-            String path = "pending." + suggestion.getUniqueID();
-            if (!existingKeys.contains(suggestion.getUniqueID().toString())) {
-                pendingConfig.set(path + ".title", suggestion.getTitle());
-                pendingConfig.set(path + ".description", suggestion.getDescription());
-                pendingConfig.set(path + ".suggester", suggestion.getCreator());
-            }
+        pendingConfig.set("pending", null); // ✅ Clear old data before saving
+
+        System.out.println("💾 Saving " + configManager.pendingSuggestions.size() + " pending suggestions...");
+
+        for (Suggestion suggestion : configManager.pendingSuggestions) {
+            String path = "pending." + suggestion.getUniqueID(); // ✅ Ensure UUID is stored correctly
+            pendingConfig.set(path + ".title", suggestion.getTitle());
+            pendingConfig.set(path + ".description", suggestion.getDescription());
+            pendingConfig.set(path + ".suggester", suggestion.getCreator());
+
+            System.out.println("✅ Saved pending: " + suggestion.getTitle() + " (UUID: " + suggestion.getUniqueID() + ")");
         }
 
         try {
             pendingConfig.save(pendingFile);
+            System.out.println("✅ Successfully saved `pending.yml`!");
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println(ChatColor.RED + "Could not save pending suggestions file!");
+            System.out.println("❌ Failed to save `pending.yml`!");
         }
     }
 
@@ -368,17 +402,27 @@ public class ConfigManager {
         }
     }
 
-     void loadPendingSuggestions() {
+    void loadPendingSuggestions() {
         FileConfiguration pendingConfig = configManager.getPendingConfig();
+        pendingSuggestions.clear(); // ✅ Ensure it's empty before loading
+
         if (pendingConfig.contains("pending")) {
+            System.out.println("🔄 Loading pending suggestions...");
             for (String key : pendingConfig.getConfigurationSection("pending").getKeys(false)) {
                 String title = pendingConfig.getString("pending." + key + ".title");
                 String description = pendingConfig.getString("pending." + key + ".description");
                 String suggester = pendingConfig.getString("pending." + key + ".suggester");
+
                 Suggestion suggestion = new Suggestion(title, description, suggester);
                 pendingSuggestions.add(suggestion);
+
+                System.out.println("✅ Loaded pending: " + title + " (" + key + ")");
             }
+        } else {
+            System.out.println("⚠️ No pending suggestions found in config.");
         }
+
+        System.out.println("📊 Total pending suggestions loaded: " + pendingSuggestions.size());
     }
 
     public void reloadSuggestionDataFiles() {
