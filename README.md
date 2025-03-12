@@ -1,7 +1,7 @@
 ![image](https://github.com/user-attachments/assets/db93ed95-3b3b-4e2c-9778-4ca64357d805)
 
 
-## Just a more advanced version of SuggestionsPL   
+## A more advanced version of SuggestionsPL   
 ###(currently still in development)
 My main goal right now is to finish the functionality of the plugin and then go through to hopefully optimize it.
 
