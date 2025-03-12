@@ -24,8 +24,8 @@ public class ConfigManager {
     private static FileConfiguration pendingConfig;
 
 
-    private  final List<Suggestion> suggestions = new ArrayList<>();
-    private  final List<Suggestion> pendingSuggestions = new ArrayList<>();
+    private final List<Suggestion> suggestions = new ArrayList<>();
+    private final List<Suggestion> pendingSuggestions = new ArrayList<>();
 
     private final Set<String> validGuiTitles;
 
@@ -149,7 +149,7 @@ public class ConfigManager {
             );
         }
 
-        System.out.println("❌ No suggestion found for UUID: " + uuid);
+        System.out.println("No suggestion found for UUID: " + uuid);
         return null;
     }
 
@@ -223,9 +223,9 @@ public class ConfigManager {
 
         if (!playerDataFolder.exists()) {
             if (playerDataFolder.mkdirs()) {
-                System.out.println("✅ Created PlayerData folder: " + playerDataFolder.getAbsolutePath());
+                System.out.println("Created PlayerData folder: " + playerDataFolder.getAbsolutePath());
             } else {
-                System.out.println("❌ FAILED to create PlayerData folder!");
+                System.out.println("FAILED to create PlayerData folder!");
                 return;
             }
         }
@@ -252,9 +252,9 @@ public class ConfigManager {
         if (existingFile != null && !existingFile.getName().equals(correctFileName)) {
             File newFile = new File(playerDataFolder, correctFileName);
             if (existingFile.renameTo(newFile)) {
-                System.out.println("🔄 Renamed player file: " + existingFile.getName() + " → " + correctFileName);
+                System.out.println("Renamed player file: " + existingFile.getName() + " → " + correctFileName);
             } else {
-                System.out.println("❌ Failed to rename player file!");
+                System.out.println("Failed to rename player file!");
                 return;
             }
         }
@@ -269,21 +269,21 @@ public class ConfigManager {
                     playerConfig.set("suggestions", new ArrayList<>());
                     playerConfig.save(correctPlayerFile);
 
-                    System.out.println("✅ Created new player file: " + correctFileName);
+                    System.out.println("Created new player file: " + correctFileName);
                 } else {
-                    System.out.println("❌ Failed to create player file: " + correctFileName);
+                    System.out.println("Failed to create player file: " + correctFileName);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                System.out.println("❌ IO Exception while creating player file!");
+                System.out.println("IO Exception while creating player file!");
             }
         } else {
-            System.out.println("ℹ️ Player file already exists: " + correctFileName);
+            System.out.println("ℹPlayer file already exists: " + correctFileName);
         }
 
         // Update playerFileCache Dynamically
         configManager.playerFileCache.put(playerUUID, correctFileName);
-        System.out.println("📥 Added to playerFileCache: " + playerUUID + " → " + correctFileName);
+        System.out.println("Added to playerFileCache: " + playerUUID + " → " + correctFileName);
 
     }
 
@@ -303,7 +303,7 @@ public class ConfigManager {
             createPlayerDataFolder(SuggestionsX.getInstance());
 
         } else if (!playerDataFolder.isDirectory()) {
-            System.out.println("❌ ERROR: PlayerData folder is missing or not a directory.");
+            System.out.println("ERROR: PlayerData folder is missing or not a directory.");
             System.out.println("Expected Path: " + playerDataFolder.getAbsolutePath());
             return;
         }
@@ -316,7 +316,7 @@ public class ConfigManager {
                     playerConfig.save(file);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    System.out.println("❌ Failed to save player file: " + file.getName());
+                    System.out.println("Failed to save player file: " + file.getName());
                 }
             }
         }
@@ -360,25 +360,25 @@ public class ConfigManager {
             pendingConfig.createSection("pending");
         }
 
-        pendingConfig.set("pending", null); // ✅ Clear old data before saving
+        pendingConfig.set("pending", null); // Clear old data before saving
 
         System.out.println("💾 Saving " + configManager.pendingSuggestions.size() + " pending suggestions...");
 
         for (Suggestion suggestion : configManager.pendingSuggestions) {
-            String path = "pending." + suggestion.getUniqueID(); // ✅ Ensure UUID is stored correctly
+            String path = "pending." + suggestion.getUniqueID(); // Ensure UUID is stored correctly
             pendingConfig.set(path + ".title", suggestion.getTitle());
             pendingConfig.set(path + ".description", suggestion.getDescription());
             pendingConfig.set(path + ".suggester", suggestion.getCreator());
 
-            System.out.println("✅ Saved pending: " + suggestion.getTitle() + " (UUID: " + suggestion.getUniqueID() + ")");
+            System.out.println("Saved pending: " + suggestion.getTitle() + " (UUID: " + suggestion.getUniqueID() + ")");
         }
 
         try {
             pendingConfig.save(pendingFile);
-            System.out.println("✅ Successfully saved `pending.yml`!");
+            System.out.println("Successfully saved `pending.yml`!");
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("❌ Failed to save `pending.yml`!");
+            System.out.println("Failed to save `pending.yml`!");
         }
     }
 
@@ -404,10 +404,10 @@ public class ConfigManager {
 
     void loadPendingSuggestions() {
         FileConfiguration pendingConfig = configManager.getPendingConfig();
-        pendingSuggestions.clear(); // ✅ Ensure it's empty before loading
+        pendingSuggestions.clear(); // Ensure it's empty before loading
 
         if (pendingConfig.contains("pending")) {
-            System.out.println("🔄 Loading pending suggestions...");
+            System.out.println("Loading pending suggestions...");
             for (String key : pendingConfig.getConfigurationSection("pending").getKeys(false)) {
                 String title = pendingConfig.getString("pending." + key + ".title");
                 String description = pendingConfig.getString("pending." + key + ".description");
@@ -416,13 +416,13 @@ public class ConfigManager {
                 Suggestion suggestion = new Suggestion(title, description, suggester);
                 pendingSuggestions.add(suggestion);
 
-                System.out.println("✅ Loaded pending: " + title + " (" + key + ")");
+                System.out.println("Loaded pending: " + title + " (" + key + ")");
             }
         } else {
-            System.out.println("⚠️ No pending suggestions found in config.");
+            System.out.println("No pending suggestions found in config.");
         }
 
-        System.out.println("📊 Total pending suggestions loaded: " + pendingSuggestions.size());
+        System.out.println("Total pending suggestions loaded: " + pendingSuggestions.size());
     }
 
     public void reloadSuggestionDataFiles() {

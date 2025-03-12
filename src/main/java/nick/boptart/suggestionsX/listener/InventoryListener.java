@@ -99,10 +99,12 @@ public class InventoryListener implements Listener {
 
         if (clickedItem.getType() == Material.OAK_DOOR && clickedItem.getItemMeta().getDisplayName().equals("Go Back")) {
             player.closeInventory();
+
             //TODO: Change permission to something like suggestionsx.mainmenu.admin
             if (player.hasPermission("suggestions.admin")) {
                 AdminMainMenu mainMenu = new AdminMainMenu();
                 mainMenu.openAdminGUI(player);
+
             } else {
                 MainMenu mainMenu = new MainMenu();
                 mainMenu.openPlayerGUI(player);
@@ -110,7 +112,7 @@ public class InventoryListener implements Listener {
 
         }
         //suggestions menu click
-        else if (clickedItem.getType() == Material.PAPER && clickedItem.containsEnchantment(Enchantment.UNBREAKING)) {
+        if (clickedItem.getType() == Material.PAPER && clickedItem.containsEnchantment(Enchantment.UNBREAKING)) {
 
             ClickType click = event.getClick();
 
@@ -130,7 +132,7 @@ public class InventoryListener implements Listener {
 
         }
         //handle pending menu clicking
-        else if ((clickedItem.getType() == Material.TALL_GRASS && clickedItem.containsEnchantment(Enchantment.UNBREAKING))){
+        if ((clickedItem.getType() == Material.TALL_GRASS && clickedItem.containsEnchantment(Enchantment.UNBREAKING))){
             ClickType click = event.getClick();
 
             //admin click handling
@@ -176,7 +178,7 @@ public class InventoryListener implements Listener {
         }
 
         //handle own suggestions menu clicking
-        else if ((clickedItem.getType() == Material.WRITTEN_BOOK && clickedItem.containsEnchantment(Enchantment.UNBREAKING))){
+        if ((clickedItem.getType() == Material.WRITTEN_BOOK && clickedItem.containsEnchantment(Enchantment.UNBREAKING))){
 
             ClickType click = event.getClick();
             //get suggestion title.
@@ -185,23 +187,23 @@ public class InventoryListener implements Listener {
             Suggestion clickedSuggestion = Suggestion.getSuggestionByTitle(suggestionTitle);
 
             if (clickedSuggestion == null) {
-                System.out.println("❌ Error: clickedSuggestion is null for title: " + suggestionTitle);
+                System.out.println("Error: clickedSuggestion is null for title: " + suggestionTitle);
                 player.sendMessage(ChatColor.RED + "Error: Suggestion not found.");
                 return;
             }
 
-            System.out.println("🗑 Preparing to remove: " + clickedSuggestion.getTitle() + " (UUID: " + clickedSuggestion.getUniqueID() + ")");
-            System.out.println("📂 Player File: " + ConfigManager.getPlayerFile(PlayerManager.getCreatorUUID(clickedSuggestion.getCreator()), plugin));
+            System.out.println("Preparing to remove: " + clickedSuggestion.getTitle() + " (UUID: " + clickedSuggestion.getUniqueID() + ")");
+            System.out.println("Player File: " + ConfigManager.getPlayerFile(PlayerManager.getCreatorUUID(clickedSuggestion.getCreator()), plugin));
 
             int currStatus = clickedSuggestion.getStatus();
 
             if (click == ClickType.LEFT) {
                 switch (currStatus) {
                     case 0:  // Pending
-                        System.out.println("🗑 Removing pending suggestion...");
+                        System.out.println("Removing pending suggestion...");
                         boolean removed = ConfigManager.getPendingSuggestions().remove(clickedSuggestion);
-                        System.out.println("📊 Pending suggestions after removal: " + ConfigManager.getPendingSuggestions().size());
-                        System.out.println(removed ? "✅ Suggestion removed from pending list." : "❌ Failed to remove suggestion from pending list.");
+                        System.out.println("Pending suggestions after removal: " + ConfigManager.getPendingSuggestions().size());
+                        System.out.println(removed ? "Suggestion removed from pending list." : "Failed to remove suggestion from pending list.");
 
                         System.out.println("📂 Removing from player file...");
                         PlayerManager.removeSuggestionFromPlayer(clickedSuggestion, clickedSuggestion.getCreator());
@@ -213,7 +215,7 @@ public class InventoryListener implements Listener {
                     case 1: // Approved
                         System.out.println("🗑 Removing approved suggestion...");
                         boolean removedApproved = ConfigManager.getSuggestions().remove(clickedSuggestion);
-                        System.out.println(removedApproved ? "✅ Suggestion removed from suggestions list." : "❌ Failed to remove suggestion from suggestions list.");
+                        System.out.println(removedApproved ? "Suggestion removed from suggestions list." : "Failed to remove suggestion from suggestions list.");
 
                         PlayerManager.removeSuggestionFromPlayer(clickedSuggestion, clickedSuggestion.getCreator());
 

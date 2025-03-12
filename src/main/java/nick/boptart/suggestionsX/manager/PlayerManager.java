@@ -51,7 +51,7 @@ public class PlayerManager {
             return suggestionCount;
         }
 
-        System.out.println("❌ Could not find player file for " + playerName);
+        System.out.println("Could not find player file for " + playerName);
         return 0;
     }
 
@@ -88,23 +88,23 @@ public class PlayerManager {
         File playerDataFolder = new File(SuggestionsX.getInstance().getDataFolder(), "SuggestionData/PlayerData");
 
         if (!playerDataFolder.exists() || !playerDataFolder.isDirectory()) {
-            System.out.println("❌ ERROR: PlayerData folder is missing or not a directory.");
+            System.out.println("ERROR: PlayerData folder is missing or not a directory.");
             System.out.println("Expected Path: " + playerDataFolder.getAbsolutePath());
             return null;
         }
 
-        System.out.println("📂 Checking folder: " + playerDataFolder.getAbsolutePath());
+        System.out.println("Checking folder: " + playerDataFolder.getAbsolutePath());
 
         for (File file : playerDataFolder.listFiles()) {
-            System.out.println("🔍 Found file: " + file.getName());
+            System.out.println("Found file: " + file.getName());
 
             if (file.isFile() && file.getName().equalsIgnoreCase(playerName + ".yml")) {
-                System.out.println("✅ Matched player file: " + file.getAbsolutePath());
+                System.out.println("Matched player file: " + file.getAbsolutePath());
                 return file;
             }
         }
 
-        System.out.println("❌ No matching file found for player: " + playerName);
+        System.out.println("No matching file found for player: " + playerName);
         return null;
     }
 
@@ -173,7 +173,7 @@ public class PlayerManager {
 
     public static List<Suggestion> getPlayerSuggestions(File playerFile) {
         if (!playerFile.exists()) {
-            System.out.println("❌ Player file does not exist: " + playerFile.getName());
+            System.out.println("Player file does not exist: " + playerFile.getName());
             return Collections.emptyList();
         }
 
@@ -181,7 +181,7 @@ public class PlayerManager {
         List<String> suggestionUUIDs = playerConfig.getStringList("suggestions");
 
         if (suggestionUUIDs.isEmpty()) {
-            System.out.println("ℹ️ No suggestions found in player file: " + playerFile.getName());
+            System.out.println("No suggestions found in player file: " + playerFile.getName());
             return Collections.emptyList();
         }
 
@@ -193,12 +193,12 @@ public class PlayerManager {
 
                 if (suggestion != null) {
                     playerSuggestions.add(suggestion);
-                    System.out.println("✅ Retrieved suggestion: " + suggestion.getTitle() + " (UUID: " + suggUUID + ")");
+                    System.out.println("Retrieved suggestion: " + suggestion.getTitle() + " (UUID: " + suggUUID + ")");
                 } else {
-                    System.out.println("❌ No suggestion found for UUID: " + suggUUID);
+                    System.out.println("No suggestion found for UUID: " + suggUUID);
                 }
             } catch (IllegalArgumentException e) {
-                System.out.println("❌ Invalid UUID format in player file: " + uuidString);
+                System.out.println("Invalid UUID format in player file: " + uuidString);
             }
         }
         return playerSuggestions;

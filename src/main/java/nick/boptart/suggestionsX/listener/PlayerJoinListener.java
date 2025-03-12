@@ -26,7 +26,7 @@ public class PlayerJoinListener implements Listener {
 
         // Fetch player file properly
         if (!ConfigManager.getConfigManager().getPlayerFileCache().containsKey(playerUUID)) {
-            System.out.println("🆕 New player detected! Creating file...");
+            System.out.println("New player detected! Creating file...");
             ConfigManager.createPlayerFile(player, plugin);
         }
     }

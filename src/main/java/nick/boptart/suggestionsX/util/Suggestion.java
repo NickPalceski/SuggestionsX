@@ -26,7 +26,7 @@ public class Suggestion {
     public int posVotes;
     public int negVotes;
 
-    // ✅ Constructor for new suggestions (Generates a new UUID)
+    // Constructor for new suggestions (Generates a new UUID)
     public Suggestion(String title, String description, String creator) {
         this.uniqueID = UUID.randomUUID(); // ✅ Generate a new UUID automatically
         this.creator = creator;
@@ -39,7 +39,7 @@ public class Suggestion {
         this.voters = new HashSet<>();
     }
 
-    // ✅ Constructor for loading suggestions from a file (Uses existing UUID)
+    // Constructor for loading suggestions from a file (Uses existing UUID)
     public Suggestion(UUID uniqueID, String title, String description, String creator) {
         this.uniqueID = uniqueID; // ✅ Uses the UUID from the file instead of generating a new one
         this.creator = creator;
@@ -117,24 +117,24 @@ public class Suggestion {
 
     public static Suggestion getSuggestionByTitle(String title) {
 
-        System.out.println("🔍 Searching for suggestion by title: " + title);
-        System.out.println("📊 Pending suggestions count: " + ConfigManager.getPendingSuggestions().size());
+        System.out.println("Searching for suggestion by title: " + title);
+        System.out.println("Pending suggestions count: " + ConfigManager.getPendingSuggestions().size());
 
         for (Suggestion suggestion : ConfigManager.getPendingSuggestions()) {
-            System.out.println("🔎 Checking suggestion: " + suggestion.getTitle());
+            System.out.println("Checking suggestion: " + suggestion.getTitle());
 
             if (suggestion.getTitle().equalsIgnoreCase(title)) {
-                System.out.println("✅ Found exact match: " + suggestion.getTitle());
+                System.out.println("Found exact match: " + suggestion.getTitle());
                 return suggestion;
             }
 
             if (ChatColor.stripColor(suggestion.getTitle()).equalsIgnoreCase(ChatColor.stripColor(title))) {
-                System.out.println("✅ Found match after stripping color codes: " + suggestion.getTitle());
+                System.out.println("Found match after stripping color codes: " + suggestion.getTitle());
                 return suggestion;
             }
         }
 
-        System.out.println("❌ Suggestion not found for title: " + title);
+        System.out.println("Suggestion not found for title: " + title);
         return null;
     }
 
