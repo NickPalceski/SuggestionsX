@@ -2,7 +2,7 @@
 
 
 ## A more advanced version of SuggestionsPL   
-###(currently still in development)
+### (currently still in development)
 My main goal right now is to finish the functionality of the plugin and then go through to hopefully optimize it.
 
 
