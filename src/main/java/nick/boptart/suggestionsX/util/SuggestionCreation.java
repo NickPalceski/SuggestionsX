@@ -64,7 +64,7 @@ public class SuggestionCreation {
                 ConfigManager.getPendingSuggestions().add(suggestion);
                 ConfigManager.savePendingSuggestions();
                 // Add the suggestion UUID to the player's file
-                File playerFile = ConfigManager.getPlayerFile(playerUUID, SuggestionsX.getInstance());
+                File playerFile = PlayerManager.getPlayerFile(playerUUID, SuggestionsX.getInstance());
                 if (playerFile != null) {
                     FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
                     List<String> suggestions = playerConfig.getStringList("suggestions");
@@ -78,7 +78,7 @@ public class SuggestionCreation {
                         playerConfig.save(playerFile);
                     } catch (IOException e) {
                         e.printStackTrace();
-                        player.sendMessage("§cFailed to save your suggestion.");
+                        player.sendMessage("§cFailed to save your suggestion to player file.");
                     }
 
                 }
@@ -133,7 +133,7 @@ public class SuggestionCreation {
                         suggestionData.get("playerName")
                 );
                 ConfigManager.getSuggestions().add(suggestion);
-                // Add the suggestion UUID to the player's file
+                //TODO Add the suggestion UUID to the player's file
                 File suggesterFile = PlayerManager.getPlayerFileByName(suggestionData.get("playerName"));
                 if (suggesterFile != null) {
                     FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(suggesterFile);
@@ -145,18 +145,18 @@ public class SuggestionCreation {
                         playerConfig.save(suggesterFile);
                     } catch (IOException e) {
                         e.printStackTrace();
-                        player.sendMessage("§cFailed to save your suggestion.");
+                        player.sendMessage("§cFailed to save suggestion to suggester.");
                     }
 
                 }
                 else{
                     player.sendMessage("§cCould not find suggester's file.");
                 }
-                player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Suggestion added:" + ChatColor.WHITE + " " + suggestion.getTitle());
-                player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.8f, 0.8f);
                 playersAddingSuggestion.remove(playerUUID);
-
                 ConfigManager.saveSuggestions();
+                player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Suggestion added to server suggestions:" + ChatColor.WHITE + " " + suggestion.getTitle());
+                player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.8f, 0.8f);
+
                 break;
 
             default:

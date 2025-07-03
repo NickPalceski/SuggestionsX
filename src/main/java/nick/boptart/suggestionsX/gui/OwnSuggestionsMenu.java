@@ -21,42 +21,35 @@ import java.util.UUID;
 
 public class OwnSuggestionsMenu {
 
-    public OwnSuggestionsMenu(SuggestionsX plugin) {
-        this.plugin = plugin;
-    }
-
-    private final SuggestionsX plugin;
-
-
+    public int page = 1;
 
     public void openOwnMenu(Player player) {
-        Inventory ownMenu = createOwnMenu(player);
+        Inventory ownMenu = createOwnMenu(player, page);
         player.openInventory(ownMenu);
     }
 
 
-    public Inventory createOwnMenu(Player player) {
-        int page = 0;
-        int size = 54;
+    public Inventory createOwnMenu(Player player, int page) {
+        this.page = page;
+        final int size = 54;
 
         // Fetch the suggestions GUI title from the config
-        String title = ChatColor.translateAlternateColorCodes('&', ConfigManager.getConfigManager().getOwnSuggestionsTitle());
+        String title = ChatColor.translateAlternateColorCodes(
+                '&', ConfigManager.getConfigManager().getOwnSuggestionsTitle()
+                        + ChatColor.BLACK + " " + page);
 
         // Create the inventory with the title
-        Inventory gui = org.bukkit.Bukkit.createInventory(null, size, title + ChatColor.BLACK + " " + (page + 1));
+        Inventory gui = org.bukkit.Bukkit.createInventory(null, size, title);
 
-        int startIndex = page * (size-9);
-        int endIndex = (page+1) * (size - 9);
-
-        ItemStack backMenu = new ItemStack(Material.OAK_DOOR);
-        ItemMeta glassMeta = backMenu.getItemMeta();
-        glassMeta.setDisplayName("Go Back");
-        backMenu.setItemMeta(glassMeta);
-        gui.setItem(size - 5, backMenu); // add to middle last row
+        ItemStack backButton = new ItemStack(Material.OAK_DOOR);
+        ItemMeta backMeta = backButton.getItemMeta();
+        backMeta.setDisplayName("Go Back");
+        backButton.setItemMeta(backMeta);
+        gui.setItem(size - 5, backButton); // add to middle last row
 
         //get player UUID and File
         UUID playerUUID = player.getUniqueId();
-        File playerFile = ConfigManager.getPlayerFile(playerUUID, plugin);
+        File playerFile = PlayerManager.getPlayerFileByName(player.getName());
         if (playerFile == null) {
             player.sendMessage(ChatColor.RED + "Error: Could not find your player file.");
             Bukkit.getLogger().severe("Player file is NULL for " + player.getName() + " (UUID: " + playerUUID + ")");
@@ -73,45 +66,48 @@ public class OwnSuggestionsMenu {
         for (int i = 0; i < playerSugg.size(); i++) {
             Suggestion suggestion = playerSugg.get(i);
 
-            ItemStack paper = new ItemStack(Material.WRITTEN_BOOK);
-            ItemMeta meta = paper.getItemMeta();
-            meta.setDisplayName(ChatColor.YELLOW + suggestion.getTitle());
-            meta.addEnchant(Enchantment.UNBREAKING, 1, true);
-            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-            List<String> lore = new ArrayList<>();
+            ItemStack ownSugg = new ItemStack(Material.WRITTEN_BOOK);
+            ItemMeta ownSuggMeta = ownSugg.getItemMeta();
+            ownSuggMeta.setDisplayName(ChatColor.YELLOW + suggestion.getTitle());
+            ownSuggMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+            ownSuggMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            List<String> suggDataLore = new ArrayList<>();
+
+            String desc = suggestion.getDescription();
+
             if (suggestion.getStatus() == 0) {
-                lore.add(ChatColor.LIGHT_PURPLE + "Description: " + ChatColor.GRAY + suggestion.getDescription());
-                lore.add(" ");
-                lore.add(ChatColor.GOLD + "" + ChatColor.BOLD + "PENDING");
-                lore.add(ChatColor.WHITE + "Click to delete." + ChatColor.GRAY + " (Left-Click)");
-                lore.add(ChatColor.ITALIC + "Pending suggestions can be removed at any time.");
+                suggDataLore.add(ChatColor.LIGHT_PURPLE + "Description: " + ChatColor.GRAY + desc);
+                suggDataLore.add(" ");
+                suggDataLore.add(ChatColor.GOLD + "" + ChatColor.BOLD + "PENDING");
+                suggDataLore.add(ChatColor.WHITE + "Click to delete." + ChatColor.GRAY + " (Left-Click)");
+                suggDataLore.add(ChatColor.ITALIC + "Pending suggestions can be removed at any time.");
             }
             else if (suggestion.getStatus()== 1){
-                lore.add(ChatColor.LIGHT_PURPLE + "Description: " + ChatColor.GRAY + suggestion.getDescription());
-                lore.add(ChatColor.GREEN + "Up Votes: " + suggestion.getPosVotes());
-                lore.add(ChatColor.RED + "Down Votes: " + suggestion.getNegVotes());
-                lore.add("Total Votes: " + (suggestion.getTotalVotes()));
-                lore.add(" ");
-                lore.add(ChatColor.GREEN + "" + ChatColor.BOLD + "APPROVED");
-                lore.add(ChatColor.WHITE + "Click to delete." + ChatColor.GRAY + " (Left-Click)");
-                lore.add(ChatColor.ITALIC + "Approved suggestions will have to be approved for removal.");
+                suggDataLore.add(ChatColor.LIGHT_PURPLE + "Description: " + ChatColor.GRAY + desc);
+                suggDataLore.add(ChatColor.GREEN + "Up Votes: " + suggestion.getPosVotes());
+                suggDataLore.add(ChatColor.RED + "Down Votes: " + suggestion.getNegVotes());
+                suggDataLore.add("Total Votes: " + (suggestion.getTotalVotes()));
+                suggDataLore.add(" ");
+                suggDataLore.add(ChatColor.GREEN + "" + ChatColor.BOLD + "APPROVED");
+                suggDataLore.add(ChatColor.WHITE + "Click to delete." + ChatColor.GRAY + " (Left-Click)");
+                suggDataLore.add(ChatColor.ITALIC + "Approved suggestions can only be removed by an admin.");
 
             }
             else{
-                lore.add(ChatColor.LIGHT_PURPLE + "Description: " + ChatColor.GRAY + suggestion.getDescription());
-                lore.add(" ");
-                lore.add(ChatColor.DARK_RED + "" + ChatColor.BOLD + "DENIED");
-                lore.add(ChatColor.WHITE + "Click to delete." + ChatColor.GRAY + " (Left-Click)");
-                lore.add(ChatColor.ITALIC + "You will get your suggestion point back.");
+                suggDataLore.add(ChatColor.LIGHT_PURPLE + "Description: " + ChatColor.GRAY + desc);
+                suggDataLore.add(" ");
+                suggDataLore.add(ChatColor.DARK_RED + "" + ChatColor.BOLD + "DENIED");
+                suggDataLore.add(ChatColor.WHITE + "Click to delete." + ChatColor.GRAY + " (Left-Click)");
+                suggDataLore.add(ChatColor.ITALIC + "You will get your suggestion point back.");
             }
 
-            meta.setLore(lore);
-            paper.setItemMeta(meta);
-            gui.setItem(i % 45, paper);
+            ownSuggMeta.setLore(suggDataLore);
+            ownSugg.setItemMeta(ownSuggMeta);
+            gui.setItem(i % 45, ownSugg);
         }
 
         // Add navigation arrows if needed
-        if ((size - 9) < (ConfigManager.getSuggestions().size() - (size-9)*page)) {
+        if ((size - 9) < (ConfigManager.getSuggestions().size())) {
             ItemStack nextPage = new ItemStack(Material.ARROW);
             ItemMeta nextPageMeta = nextPage.getItemMeta();
             nextPageMeta.setDisplayName(ChatColor.GREEN + "Next Page");
@@ -119,7 +115,7 @@ public class OwnSuggestionsMenu {
             gui.setItem(size - 1, nextPage);
         }
 
-        if (page > 0) {
+        if (page > 1) {
             ItemStack prevPage = new ItemStack(Material.ARROW);
             ItemMeta prevPageMeta = prevPage.getItemMeta();
             prevPageMeta.setDisplayName(ChatColor.GREEN + "Last Page");

@@ -13,13 +13,12 @@ public class MainMenu {
 
 
     public void openPlayerGUI(Player player) {
-        Inventory mainMenu = createPlayerMenu(player); // Get the GUI
+        Inventory mainMenu = createPlayerMenu(player);
         player.openInventory(mainMenu);
     }
 
-
     private Inventory createPlayerMenu(Player player) {
-        String playerGUITitle = ChatColor.translateAlternateColorCodes('&', ConfigManager.getConfigManager().getPlayerMenuTitle());
+        String playerGUITitle = ConfigManager.getMenuTitle("player-menu-title");
         Inventory playerGUI = org.bukkit.Bukkit.createInventory(null, 27, playerGUITitle);
 
         // Create items

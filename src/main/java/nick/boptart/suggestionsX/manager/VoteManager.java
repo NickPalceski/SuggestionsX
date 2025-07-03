@@ -9,54 +9,90 @@ import java.util.UUID;
 public class VoteManager {
 
 
-    public static boolean hasNotVoted(UUID playerUUID, Suggestion suggestion) {
-        return suggestion.getVoters().add(playerUUID); // Returns false if the UUID already exists
+    public static boolean hasVotedNeg(UUID playerUUID, Suggestion suggestion) {
+        return suggestion.getDownVoters().contains(playerUUID); // Returns false if the UUID already exists
     }
 
-    public static boolean hasVoted(UUID playerUUID, Suggestion suggestion) {
-        return suggestion.getVoters().contains(playerUUID);
+    public static boolean hasVotedPos(UUID playerUUID, Suggestion suggestion) {
+        return suggestion.getUpVoters().contains(playerUUID);
     }
+
+
 
     public static void handleVote(Player player, Suggestion suggestion, ClickType clickType) {
         UUID playerUUID = player.getUniqueId();
 
-        if (hasVoted(playerUUID, suggestion)) {
+        boolean upVoted = hasVotedPos(playerUUID, suggestion);
+        boolean downVoted = hasVotedNeg(playerUUID, suggestion);
 
-            suggestion.getVoters().remove(playerUUID);
-            suggestion.decreaseTotalVotes();
-            //TODO: somehow figure out if the player upvoted or downvoted and decrease the respective vote count.
-
-            player.sendMessage("§cRemoved your previous vote.");
-
-        } else if (hasNotVoted(playerUUID, suggestion) && clickType == ClickType.LEFT) { //upvote
-            suggestion.increasePosVotes();
-            suggestion.increaseTotalVotes(suggestion);
-            suggestion.getVoters().add(playerUUID);
-            player.sendMessage("§aYour upvote has been added!");
-
-        } else if (hasNotVoted(playerUUID, suggestion) && clickType == ClickType.RIGHT) { //downvote
-            player.sendMessage("§cFailed to add your vote. Please try again.");
-            suggestion.increaseNegVotes();
-            suggestion.increaseTotalVotes(suggestion);
-            suggestion.getVoters().add(playerUUID);
-            player.sendMessage("§aYour downvote has been added!");
-
-        } else if (clickType == ClickType.SHIFT_RIGHT && player.hasPermission("suggestions.admin")) {
+        // Admin delete shortcut
+        if (clickType == ClickType.SHIFT_RIGHT && player.hasPermission("suggestions.admin")) {
             ConfigManager.getSuggestions().remove(suggestion);
             player.sendMessage("§cYou have deleted this suggestion.");
-
-        }else{
-            player.sendMessage("§cFailed to register a valid click.");
+            return;
         }
 
+        if (clickType == ClickType.LEFT) { // Upvote
+            if (upVoted) {
+                // Remove upvote
+                removePlayerFromUpVoters(playerUUID, suggestion);
+                suggestion.decreasePosVotes();
+                suggestion.decreaseTotalVotes();
+                player.sendMessage("§cRemoved your upvote.");
+            } else {
+                // Remove downvote if it existed
+                if (downVoted) {
+                    removePlayerFromDownVoters(playerUUID, suggestion);
+                    suggestion.decreaseNegVotes();
+                }
+
+                // Add upvote
+                addPlayerToUpVoters(playerUUID, suggestion);
+                suggestion.increasePosVotes();
+                suggestion.increaseTotalVotes(suggestion);
+                player.sendMessage("§aYour upvote has been added!");
+            }
+
+        } else if (clickType == ClickType.RIGHT) { // Downvote
+            if (downVoted) {
+                // Remove downvote
+                removePlayerFromDownVoters(playerUUID, suggestion);
+                suggestion.decreaseNegVotes();
+                suggestion.decreaseTotalVotes();
+                player.sendMessage("§cRemoved your downvote.");
+            } else {
+                // Remove upvote if it existed
+                if (upVoted) {
+                    removePlayerFromUpVoters(playerUUID, suggestion);
+                    suggestion.decreasePosVotes();
+                }
+
+                // Add downvote
+                addPlayerToDownVoters(playerUUID, suggestion);
+                suggestion.increaseNegVotes();
+                suggestion.increaseTotalVotes(suggestion);
+                player.sendMessage("§aYour downvote has been added!");
+            }
+
+        } else {
+            player.sendMessage("§cInvalid click type.");
+        }
     }
 
-    public static void removePlayerFromVoters(UUID playerUUID, Suggestion suggestion) {
-        suggestion.getVoters().remove(playerUUID);
+    public static void removePlayerFromUpVoters(UUID playerUUID, Suggestion suggestion) {
+        suggestion.getUpVoters().remove(playerUUID);
     }
 
-    public static void addPlayerFromVoters(UUID playerUUID, Suggestion suggestion) {
-        suggestion.getVoters().add(playerUUID);
+    public static void addPlayerToUpVoters(UUID playerUUID, Suggestion suggestion) {
+        suggestion.getUpVoters().add(playerUUID);
+    }
+
+    public static void removePlayerFromDownVoters(UUID playerUUID, Suggestion suggestion) {
+        suggestion.getDownVoters().remove(playerUUID);
+    }
+
+    public static void addPlayerToDownVoters(UUID playerUUID, Suggestion suggestion) {
+        suggestion.getDownVoters().add(playerUUID);
     }
 
 

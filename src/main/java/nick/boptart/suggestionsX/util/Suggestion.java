@@ -13,7 +13,8 @@ public class Suggestion {
     private static final int TITLE_MAX_LENGTH = 50;
     private static final int DESC_MAX_LENGTH = 200;
 
-    private final Set<UUID> voters;
+    private final Set<UUID> upVoters;
+    private final Set<UUID> downVoters;
 
     private final UUID uniqueID;
     private final String creator;
@@ -28,28 +29,34 @@ public class Suggestion {
 
     // Constructor for new suggestions (Generates a new UUID)
     public Suggestion(String title, String description, String creator) {
-        this.uniqueID = UUID.randomUUID(); // ✅ Generate a new UUID automatically
+        this.uniqueID = UUID.randomUUID();
         this.creator = creator;
         this.title = title;
         this.description = description;
         this.status = 0;
+
         this.totalVotes = 0;
         this.posVotes = 0;
         this.negVotes = 0;
-        this.voters = new HashSet<>();
+
+        this.upVoters = new HashSet<>();
+        this.downVoters = new HashSet<>();
     }
 
     // Constructor for loading suggestions from a file (Uses existing UUID)
     public Suggestion(UUID uniqueID, String title, String description, String creator) {
-        this.uniqueID = uniqueID; // ✅ Uses the UUID from the file instead of generating a new one
+        this.uniqueID = uniqueID;
         this.creator = creator;
         this.title = title;
         this.description = description;
-        this.status = 0;
-        this.totalVotes = 0;
-        this.posVotes = 0;
-        this.negVotes = 0;
-        this.voters = new HashSet<>();
+        this.status = this.getStatus();
+
+        this.totalVotes = this.getTotalVotes();
+        this.posVotes = this.getPosVotes();
+        this.negVotes = this.getNegVotes();
+
+        this.upVoters = this.getUpVoters();
+        this.downVoters = this.getDownVoters();
     }
 
     public void increasePosVotes(){posVotes++;}
@@ -74,8 +81,11 @@ public class Suggestion {
         }
     }
 
-    public Set<UUID> getVoters() {
-        return voters;
+    public Set<UUID> getUpVoters() {
+        return upVoters;
+    }
+    public Set<UUID> getDownVoters() {
+        return downVoters;
     }
 
     public void increaseTotalVotes(Suggestion suggestion){
@@ -108,20 +118,18 @@ public class Suggestion {
     public int getTotalVotes() {
         return totalVotes;
     }
-    public int getPosVotes() {
-        return posVotes;
-    }
+    public int getPosVotes() {return posVotes; }
     public int getNegVotes() {
         return negVotes;
     }
 
+
+
     public static Suggestion getSuggestionByTitle(String title) {
 
-        System.out.println("Searching for suggestion by title: " + title);
         System.out.println("Pending suggestions count: " + ConfigManager.getPendingSuggestions().size());
 
         for (Suggestion suggestion : ConfigManager.getPendingSuggestions()) {
-            System.out.println("Checking suggestion: " + suggestion.getTitle());
 
             if (suggestion.getTitle().equalsIgnoreCase(title)) {
                 System.out.println("Found exact match: " + suggestion.getTitle());

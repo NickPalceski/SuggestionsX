@@ -29,6 +29,14 @@ public class ConfigManager {
 
     private final Set<String> validGuiTitles;
 
+    public ConfigManager(JavaPlugin plugin) {
+        this.plugin = plugin;
+        this.validGuiTitles = new HashSet<>();
+        loadConfig();
+        createSuggestionDataFiles(plugin);
+        createPlayerDataFolder(plugin);
+    }
+
     public static void removeSuggestionFromPendingConfig(Suggestion suggestion) {
         FileConfiguration pendingConfig = configManager.getPendingConfig();
         pendingConfig.set("pending." + suggestion.getUniqueID(), null);
@@ -68,15 +76,6 @@ public class ConfigManager {
     private String playerSuggestionsTitle;
     private String adminSuggestionsTitle;
 
-
-
-    public ConfigManager(JavaPlugin plugin) {
-        this.plugin = plugin;
-        this.validGuiTitles = new HashSet<>();
-        loadConfig();
-        createSuggestionDataFiles(plugin);
-        createPlayerDataFolder(plugin);
-    }
 
     public void initialize() {
         configManager = this;
@@ -122,6 +121,14 @@ public class ConfigManager {
             configManager.validGuiTitles.add(ChatColor.stripColor(title));
         });
         return configManager.validGuiTitles;
+    }
+
+    public static String getMenuTitle(String configTitle) {
+        String title = SuggestionsX.getInstance().getConfig().getString("gui." + configTitle);
+        if (title == null) {
+            return "";
+        }
+        return ChatColor.translateAlternateColorCodes('&', title);
     }
 
     public static Suggestion getSuggestionByUUID(UUID uuid) {
@@ -287,40 +294,6 @@ public class ConfigManager {
 
     }
 
-    public static File getPlayerFile(UUID playerUUID, JavaPlugin plugin) {
-        String fileName = configManager.playerFileCache.get(playerUUID);
-        if (fileName != null) {
-            return new File(plugin.getDataFolder(), "SuggestionData/PlayerData/" + fileName);
-        }
-        return null;
-    }
-
-    public static void savePlayerFiles() {
-        File playerDataFolder = new File(SuggestionsX.getInstance().getDataFolder(), "SuggestionData/PlayerData");
-
-        if (!playerDataFolder.exists()) {
-
-            createPlayerDataFolder(SuggestionsX.getInstance());
-
-        } else if (!playerDataFolder.isDirectory()) {
-            System.out.println("ERROR: PlayerData folder is missing or not a directory.");
-            System.out.println("Expected Path: " + playerDataFolder.getAbsolutePath());
-            return;
-        }
-
-        for (File file : playerDataFolder.listFiles()) {
-            if (file.isFile() && file.getName().endsWith(".yml")) {
-                FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(file);
-
-                try {
-                    playerConfig.save(file);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    System.out.println("Failed to save player file: " + file.getName());
-                }
-            }
-        }
-    }
 
 
 
@@ -340,7 +313,8 @@ public class ConfigManager {
                 suggestionsConfig.set(path + ".posVotes", suggestion.posVotes);
                 suggestionsConfig.set(path + ".negVotes", suggestion.negVotes);
                 //Add voters to the Set of the suggestion(s)?
-                suggestionsConfig.set(path + ".voters", suggestion.getVoters());
+                suggestionsConfig.set(path + ".voters", suggestion.getUpVoters());
+                suggestionsConfig.set(path + ".voters", suggestion.getDownVoters());
             }
         }
 
@@ -431,6 +405,32 @@ public class ConfigManager {
         loadPendingSuggestions();
     }
 
+    public static void savePlayerFiles() {
+        File playerDataFolder = new File(SuggestionsX.getInstance().getDataFolder(), "SuggestionData/PlayerData");
+
+        if (!playerDataFolder.exists()) {
+
+            ConfigManager.createPlayerDataFolder(SuggestionsX.getInstance());
+
+        } else if (!playerDataFolder.isDirectory()) {
+            System.out.println("ERROR: PlayerData folder is missing or not a directory.");
+            System.out.println("Expected Path: " + playerDataFolder.getAbsolutePath());
+            return;
+        }
+
+        for (File file : playerDataFolder.listFiles()) {
+            if (file.isFile() && file.getName().endsWith(".yml")) {
+                FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(file);
+
+                try {
+                    playerConfig.save(file);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.out.println("Failed to save player file: " + file.getName());
+                }
+            }
+        }
+    }
 
 
 }

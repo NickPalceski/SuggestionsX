@@ -15,13 +15,12 @@ public class AdminMainMenu {
 
 
     public void openAdminGUI(Player player) {
-        Inventory gui = adminMenu(player); // Get the GUI
-        player.openInventory(gui); // Open it for the player
+        Inventory gui = adminMenu(player);
+        player.openInventory(gui);
     }
 
-
     private Inventory adminMenu(Player player) {
-        String adminGUITitle = ChatColor.translateAlternateColorCodes('&', ConfigManager.getConfigManager().getAdminMenuTitle());
+        String adminGUITitle = ConfigManager.getMenuTitle("admin-menu-title");
         Inventory adminGUI = org.bukkit.Bukkit.createInventory(null, 27, adminGUITitle);
 
         // Create items

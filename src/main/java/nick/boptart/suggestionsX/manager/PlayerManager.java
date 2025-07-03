@@ -59,7 +59,7 @@ public class PlayerManager {
         File playerFile = getPlayerFileByName(playerName);
         if (playerFile != null) {
             FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
-            playerConfig.set("SuggestionsLimit", num);
+            playerConfig.set("suggestionsLimit", num);
             try {
                 playerConfig.save(playerFile);
             } catch (IOException e) {
@@ -127,7 +127,7 @@ public class PlayerManager {
         UUID playerUUID = getPlayerUUIDByName(playerName);
 
         // Add the suggestion UUID to the player's file
-        File playerFile = ConfigManager.getPlayerFile(playerUUID, plugin);
+        File playerFile = PlayerManager.getPlayerFile(playerUUID, plugin);
         if (playerFile != null) {
             FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
             List<String> suggestions = playerConfig.getStringList("suggestions");
@@ -150,7 +150,7 @@ public class PlayerManager {
         UUID playerUUID = getPlayerUUIDByName(playerName);
 
         // Remove the suggestion UUID from the player's file
-        File playerFile = ConfigManager.getPlayerFile(playerUUID, plugin);
+        File playerFile = PlayerManager.getPlayerFile(playerUUID, plugin);
         if (playerFile != null) {
             FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
             List<String> suggestions = playerConfig.getStringList("suggestions");
@@ -218,6 +218,15 @@ public class PlayerManager {
             }
         }
     }
+
+    public static File getPlayerFile(UUID playerUUID, JavaPlugin plugin) {
+        String fileName = ConfigManager.getConfigManager().getPlayerFileCache().get(playerUUID);
+        if (fileName != null) {
+            return new File(plugin.getDataFolder(), "SuggestionData/PlayerData/" + fileName);
+        }
+        return null;
+    }
+
 
 
 }

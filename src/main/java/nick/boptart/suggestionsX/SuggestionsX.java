@@ -1,9 +1,7 @@
 package nick.boptart.suggestionsX;
 
 import nick.boptart.suggestionsX.command.SuggestionsCommand;
-import nick.boptart.suggestionsX.listener.ChatListener;
-import nick.boptart.suggestionsX.listener.InventoryListener;
-import nick.boptart.suggestionsX.listener.PlayerJoinListener;
+import nick.boptart.suggestionsX.listener.*;
 import nick.boptart.suggestionsX.manager.ConfigManager;
 import nick.boptart.suggestionsX.manager.PlayerManager;
 
@@ -25,42 +23,35 @@ public final class SuggestionsX extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
         instance = this;
+        instance.saveDefaultConfig();
         configManager = new ConfigManager(this);
         configManager.initialize();
 
         PlayerManager.initialize(this);
 
-        getServer().getPluginManager().registerEvents(new ChatListener(), this);
-        getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
+        //Register listeners
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
+        getServer().getPluginManager().registerEvents(new ChatListener(), this);
+        getServer().getPluginManager().registerEvents(new MainMenuListener(), this);
+        getServer().getPluginManager().registerEvents(new OwnSuggestionsListener(this), this);
+        getServer().getPluginManager().registerEvents(new ServerSuggestionsListener(), this);
+        getServer().getPluginManager().registerEvents(new PendingMenuListener(), this);
 
         //handles Main Menu and other commands... (second argument)
         getCommand("suggestions").setExecutor(new SuggestionsCommand(this));
-
     }
-
-
 
 
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
-
         //save all suggestions,config data, and player files on shutdown.
+        //TODO error in console on shutdown
         ConfigManager.saveSuggestions();
         ConfigManager.savePendingSuggestions();
         ConfigManager.savePlayerFiles();
 
-
-
-
     }
-
-
-
-
 
 }

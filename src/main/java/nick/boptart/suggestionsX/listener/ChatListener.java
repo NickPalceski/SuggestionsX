@@ -19,8 +19,6 @@ public class ChatListener implements Listener {
             return;
         }
 
-
-
         event.setCancelled(true);
         if (player.hasPermission("suggestions.admin.create")) {
             SuggestionCreation.adminSuggestionChat(player, event.getMessage());

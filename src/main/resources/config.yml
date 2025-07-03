@@ -1,6 +1,6 @@
 # config.yml
 
-# Default number of suggestions a player can make
+# Default number of suggestions a player can make (set on first join)
 default-suggestions-limit: 2
 
 # GUI settings
@@ -9,9 +9,9 @@ gui:
   #player menu titles
   own-suggestions-menu-title: "&dYour Suggestions"
   player-menu-title: "&9SuggestionsX  &3Main Menu"
-  player-suggestions-title: "&9Server Suggestions"
+  server-suggestions-title: "&9Server Suggestions"
 
   #admin menu titles
   admin-menu-title: "&9SuggestionsX  &3Main Menu  &cADMIN"
   pending-menu-title: "&6Pending Suggestions  &cADMIN"
-  admin-suggestions-title: "&9All Suggestions  &cADMIN"
+  admin-suggestions-title: "&9Server Suggestions  &cADMIN"
