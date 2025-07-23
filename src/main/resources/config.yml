@@ -7,7 +7,7 @@ default-suggestions-limit: 2
 gui:
 
   #player menu titles
-  own-suggestions-menu-title: "&dYour Suggestions"
+  own-suggestions-title: "&dYour Suggestions"
   player-menu-title: "&9SuggestionsX  &3Main Menu"
   server-suggestions-title: "&9Server Suggestions"
 

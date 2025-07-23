@@ -1,11 +1,15 @@
 package nick.boptart.suggestionsX.listener;
 
+import nick.boptart.suggestionsX.SuggestionsX;
 import nick.boptart.suggestionsX.gui.AdminMainMenu;
 import nick.boptart.suggestionsX.gui.MainMenu;
+import nick.boptart.suggestionsX.gui.PendingMenu;
 import nick.boptart.suggestionsX.manager.ConfigManager;
-import nick.boptart.suggestionsX.util.Suggestion;
+import nick.boptart.suggestionsX.suggestion.Suggestion;
+import nick.boptart.suggestionsX.util.ListenerUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,90 +18,31 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
+
+import java.util.UUID;
 
 public class PendingMenuListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
 
-        //Get player and inventory
         Player player = (Player) event.getWhoClicked();
         Inventory inventory = event.getClickedInventory();
-        if (inventory == null) return;
-
-        //Get inventory title and clicked item
-        String title = ChatColor.stripColor(event.getView().getTitle());
+        String invTitle = ChatColor.stripColor(event.getView().getTitle());
         ItemStack clickedItem = event.getCurrentItem();
-
         String pendingMenuTitle = ChatColor.stripColor(ConfigManager.getMenuTitle("pending-menu-title"));
 
+        if (inventory == null) return;
+
         //Check if the title of the inventory is the pending menu title in config
-        if (title.startsWith(pendingMenuTitle)) {
+        if (invTitle.startsWith(pendingMenuTitle)) {
             event.setCancelled(true);
             if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
 
-            handlePendingClicks(clickedItem, player, event);
+            ListenerUtil.handlePendingClicks(clickedItem, player, event);
         }
     }
 
-    private void handlePendingClicks(ItemStack clickedItem, Player player, InventoryClickEvent event) {
-
-        //Handle back button click
-        if (clickedItem.getType() == Material.OAK_DOOR && clickedItem.getItemMeta().getDisplayName().equals("Go Back")) {
-            player.closeInventory();
-
-            if (player.hasPermission("suggestions.admin")) {
-                AdminMainMenu mainMenu = new AdminMainMenu();
-                mainMenu.openAdminGUI(player);
-
-            } else {
-                MainMenu mainMenu = new MainMenu();
-                mainMenu.openPlayerGUI(player);
-            }
-        }
-
-        //handle pending suggestion clicking
-        if ((clickedItem.getType() == Material.TALL_GRASS && clickedItem.containsEnchantment(Enchantment.UNBREAKING))){
-            ClickType click = event.getClick();
-
-            if (player.hasPermission("suggestions.admin")) {
-                String suggestionTitle = ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName());
-                Suggestion clickedSuggestion = Suggestion.getSuggestionByTitle(suggestionTitle);
-
-                switch (click) {
-                    case LEFT:
-                        //approve suggestion
-                        clickedSuggestion.updateStatus(1);
-
-                        //remove from pending list and add to suggestions list.
-                        ConfigManager.getPendingSuggestions().remove(clickedSuggestion);
-                        ConfigManager.removeSuggestionFromPendingConfig(clickedSuggestion);
-
-                        ConfigManager.getSuggestions().add(clickedSuggestion);
-
-                        //save changes?
-                        ConfigManager.savePendingSuggestions();
-                        ConfigManager.saveSuggestions();
-
-                        break;
-                    case RIGHT:
-                        //deny suggestion
-                        Suggestion.getSuggestionByTitle(suggestionTitle).updateStatus(2);
-
-                        //remove from pending list
-                        ConfigManager.getPendingSuggestions().remove(clickedSuggestion);
-                        ConfigManager.removeSuggestionFromPendingConfig(clickedSuggestion);
-
-                        //save changes?
-                        ConfigManager.savePendingSuggestions();
-                        ConfigManager.saveSuggestions();
-                        break;
-
-                    default:
-                        player.sendMessage(ChatColor.RED + "You do not have permission or invalid click type.");
-                        break;
-                }
-            }
-        }
-    }
 }

@@ -1,7 +1,7 @@
 package nick.boptart.suggestionsX.manager;
 
 import nick.boptart.suggestionsX.SuggestionsX;
-import nick.boptart.suggestionsX.util.Suggestion;
+import nick.boptart.suggestionsX.suggestion.Suggestion;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -13,11 +13,7 @@ import java.util.*;
 
 public class PlayerManager {
 
-    private static JavaPlugin plugin;
-
-    public static void initialize(JavaPlugin pluginInstance) {
-        plugin = pluginInstance;
-    }
+    private static final SuggestionsX plugin = SuggestionsX.getInstance();
 
     public static boolean hasSuggestionPoints(Player player) {
         File playerFile = getPlayerFileByName(player.getName());
@@ -169,7 +165,6 @@ public class PlayerManager {
         }
 
     }
-    //maybe binary search?
 
     public static List<Suggestion> getPlayerSuggestions(File playerFile) {
         if (!playerFile.exists()) {
@@ -205,9 +200,6 @@ public class PlayerManager {
     }
 
 
-
-
-
     public static void savePlayerFile(File playerFile){
         if (playerFile != null) {
             FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
@@ -226,7 +218,5 @@ public class PlayerManager {
         }
         return null;
     }
-
-
 
 }

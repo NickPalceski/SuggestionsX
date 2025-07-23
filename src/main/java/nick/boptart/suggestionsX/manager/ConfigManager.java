@@ -1,8 +1,9 @@
 package nick.boptart.suggestionsX.manager;
 
 import nick.boptart.suggestionsX.SuggestionsX;
-import nick.boptart.suggestionsX.util.Suggestion;
+import nick.boptart.suggestionsX.suggestion.Suggestion;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -15,8 +16,8 @@ import java.util.*;
 public class ConfigManager {
 
     private static ConfigManager configManager;
-    private final JavaPlugin plugin;
-    private FileConfiguration config;
+    private static final SuggestionsX plugin = SuggestionsX.getInstance();
+    private static FileConfiguration config;
 
     private static File suggestionsFile;
     private static File pendingFile;
@@ -24,14 +25,11 @@ public class ConfigManager {
     private static FileConfiguration pendingConfig;
 
 
-    private final List<Suggestion> suggestions = new ArrayList<>();
-    private final List<Suggestion> pendingSuggestions = new ArrayList<>();
+    private static final List<Suggestion> suggestions = new ArrayList<>();
+    private static final List<Suggestion> pendingSuggestions = new ArrayList<>();
 
-    private final Set<String> validGuiTitles;
 
-    public ConfigManager(JavaPlugin plugin) {
-        this.plugin = plugin;
-        this.validGuiTitles = new HashSet<>();
+    public ConfigManager(SuggestionsX plugin) {
         loadConfig();
         createSuggestionDataFiles(plugin);
         createPlayerDataFolder(plugin);
@@ -65,30 +63,24 @@ public class ConfigManager {
         return playerFileCache;
     }
 
-    private final Map<UUID, String> playerFileCache = new HashMap<>();
+    private static final Map<UUID, String> playerFileCache = new HashMap<>();
 
-    private int defaultSuggestionsLimit;
+    private static int defaultSuggestionsLimit;
 
-    private String playerMenuTitle;
-    private String pendingMenuTitle;
-    private String ownSuggestionsTitle;
-    private String adminMenuTitle;
-    private String playerSuggestionsTitle;
-    private String adminSuggestionsTitle;
 
 
     public void initialize() {
         configManager = this;
-        this.loadSuggestions();
-        this.loadPendingSuggestions();
-        this.loadPlayerCache();
+        loadSuggestions();
+        loadPendingSuggestions();
+        loadPlayerCache();
 
     }
 
     public static ConfigManager getConfigManager() { return configManager; }
 
     public static List<Suggestion> getSuggestions() {
-        return configManager.suggestions;
+        return suggestions;
     }
 
     public FileConfiguration getSuggestionsConfig() { return suggestionsConfig; }
@@ -97,31 +89,11 @@ public class ConfigManager {
 
     public int getDefaultSuggestionsLimit() { return defaultSuggestionsLimit; }
 
-    public String getPlayerMenuTitle() { return playerMenuTitle; }
-
-    public String getPendingMenuTitle() { return pendingMenuTitle; }
-
-    public String getOwnSuggestionsTitle() { return ownSuggestionsTitle; }
-
-    public String getAdminMenuTitle() { return adminMenuTitle; }
-
-    public String getPlayerSuggestionsTitle() { return playerSuggestionsTitle; }
-
-    public String getAdminSuggestionsTitle() { return adminSuggestionsTitle; }
 
     public static List<Suggestion> getPendingSuggestions() {
-        return configManager.pendingSuggestions;
+        return pendingSuggestions;
     }
 
-
-    public static Set<String> getGUITitles() {
-
-        SuggestionsX.getInstance().getConfig().getConfigurationSection("gui").getValues(false).forEach((key, value) -> {
-            String title = ChatColor.translateAlternateColorCodes('&', value.toString());
-            configManager.validGuiTitles.add(ChatColor.stripColor(title));
-        });
-        return configManager.validGuiTitles;
-    }
 
     public static String getMenuTitle(String configTitle) {
         String title = SuggestionsX.getInstance().getConfig().getString("gui." + configTitle);
@@ -161,21 +133,14 @@ public class ConfigManager {
     }
 
 
-    public void loadConfig() {
+    public static void loadConfig() {
         plugin.saveDefaultConfig();
         config = plugin.getConfig();
         defaultSuggestionsLimit = config.getInt("default-suggestions-limit");
 
-        ownSuggestionsTitle = config.getString("gui.own-suggestions-menu-title");
-        playerMenuTitle = config.getString("gui.player-menu-title");
-        playerSuggestionsTitle = config.getString("gui.player-suggestions-title");
-
-        adminSuggestionsTitle = config.getString("gui.admin-suggestions-title");
-        pendingMenuTitle = config.getString("gui.pending-menu-title");
-        adminMenuTitle = config.getString("gui.admin-menu-title");
     }
     // Load player cache from player files ( faster access than searching through files )
-    public void loadPlayerCache() {
+    public static void loadPlayerCache() {
         File playerDataFolder = new File(plugin.getDataFolder(), "SuggestionData/PlayerData");
         if (!playerDataFolder.exists()) return;
 
@@ -242,7 +207,7 @@ public class ConfigManager {
         File correctPlayerFile = new File(playerDataFolder, correctFileName);
         File existingFile = null;
 
-        // **Check if a file already exists for the player's UUID**
+        // Check if a file already exists for the player's UUID
         for (File file : playerDataFolder.listFiles()) {
             if (file.isFile() && file.getName().endsWith(".yml")) {
                 FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(file);
@@ -289,7 +254,7 @@ public class ConfigManager {
         }
 
         // Update playerFileCache Dynamically
-        configManager.playerFileCache.put(playerUUID, correctFileName);
+        playerFileCache.put(playerUUID, correctFileName);
         System.out.println("Added to playerFileCache: " + playerUUID + " → " + correctFileName);
 
     }
@@ -300,7 +265,12 @@ public class ConfigManager {
     public static void saveSuggestions() {
         FileConfiguration suggestionsConfig = configManager.getSuggestionsConfig();
 
-        Set<String> existingKeys = suggestionsConfig.getConfigurationSection("suggestions").getKeys(false);
+        ConfigurationSection suggestionSection = suggestionsConfig.getConfigurationSection("suggestions");
+        if (suggestionSection == null) {
+            suggestionSection = suggestionsConfig.createSection("suggestions");
+        }
+
+        Set<String> existingKeys = suggestionSection.getKeys(false);
         for (Suggestion suggestion : configManager.suggestions) {
             String path = "suggestions." + suggestion.getUniqueID();
 
@@ -313,8 +283,8 @@ public class ConfigManager {
                 suggestionsConfig.set(path + ".posVotes", suggestion.posVotes);
                 suggestionsConfig.set(path + ".negVotes", suggestion.negVotes);
                 //Add voters to the Set of the suggestion(s)?
-                suggestionsConfig.set(path + ".voters", suggestion.getUpVoters());
-                suggestionsConfig.set(path + ".voters", suggestion.getDownVoters());
+                suggestionsConfig.set(path + ".posVoters", suggestion.getUpVoters());
+                suggestionsConfig.set(path + ".negVoters", suggestion.getDownVoters());
             }
         }
 
@@ -329,7 +299,7 @@ public class ConfigManager {
     public static void savePendingSuggestions() {
         FileConfiguration pendingConfig = configManager.getPendingConfig();
 
-        // ✅ Ensure "pending" section exists before modifying it
+        // Ensure "pending" section exists before modifying it
         if (!pendingConfig.contains("pending")) {
             pendingConfig.createSection("pending");
         }
@@ -356,27 +326,32 @@ public class ConfigManager {
         }
     }
 
-     void loadSuggestions() {
+     public static void loadSuggestions() {
+        suggestions.clear();
+
         FileConfiguration suggestionsConfig = configManager.getSuggestionsConfig();
         if (suggestionsConfig.contains("suggestions")) {
-            for (String key : suggestionsConfig.getConfigurationSection("suggestions").getKeys(false)) {
-                String title = suggestionsConfig.getString("suggestions." + key + ".title");
-                String description = suggestionsConfig.getString("suggestions." + key + ".description");
-                String suggester = suggestionsConfig.getString("suggestions." + key + ".suggester");
-                int totalVotes = suggestionsConfig.getInt("suggestions." + key + ".totalVotes");
-                int posVotes = suggestionsConfig.getInt("suggestions." + key + ".posVotes");
-                int negVotes = suggestionsConfig.getInt("suggestions." + key + ".negVotes");
+            ConfigurationSection section = suggestionsConfig.getConfigurationSection("suggestions");
+            if (section != null) {
+                for (String key : section.getKeys(false)) {
+                    String title = suggestionsConfig.getString("suggestions." + key + ".title");
+                    String description = suggestionsConfig.getString("suggestions." + key + ".description");
+                    String suggester = suggestionsConfig.getString("suggestions." + key + ".suggester");
+                    int totalVotes = suggestionsConfig.getInt("suggestions." + key + ".totalVotes");
+                    int posVotes = suggestionsConfig.getInt("suggestions." + key + ".posVotes");
+                    int negVotes = suggestionsConfig.getInt("suggestions." + key + ".negVotes");
 
-                Suggestion suggestion = new Suggestion(title, description, suggester);
-                suggestion.totalVotes = totalVotes;
-                suggestion.posVotes = posVotes;
-                suggestion.negVotes = negVotes;
-                suggestions.add(suggestion);
+                    Suggestion suggestion = new Suggestion(title, description, suggester);
+                    suggestion.totalVotes = totalVotes;
+                    suggestion.posVotes = posVotes;
+                    suggestion.negVotes = negVotes;
+                    suggestions.add(suggestion);
+                }
             }
         }
     }
 
-    void loadPendingSuggestions() {
+    public static void loadPendingSuggestions() {
         FileConfiguration pendingConfig = configManager.getPendingConfig();
         pendingSuggestions.clear(); // Ensure it's empty before loading
 
@@ -399,7 +374,7 @@ public class ConfigManager {
         System.out.println("Total pending suggestions loaded: " + pendingSuggestions.size());
     }
 
-    public void reloadSuggestionDataFiles() {
+    public static void reloadSuggestionDataFiles() {
         createSuggestionDataFiles(plugin);
         loadSuggestions();
         loadPendingSuggestions();
@@ -431,6 +406,5 @@ public class ConfigManager {
             }
         }
     }
-
 
 }

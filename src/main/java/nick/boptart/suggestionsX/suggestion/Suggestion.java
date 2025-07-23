@@ -1,10 +1,9 @@
-package nick.boptart.suggestionsX.util;
+package nick.boptart.suggestionsX.suggestion;
 
 import nick.boptart.suggestionsX.manager.ConfigManager;
 import org.bukkit.ChatColor;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -82,7 +81,7 @@ public class Suggestion {
     }
 
     public Set<UUID> getUpVoters() {
-        return upVoters;
+        return this.upVoters;
     }
     public Set<UUID> getDownVoters() {
         return downVoters;

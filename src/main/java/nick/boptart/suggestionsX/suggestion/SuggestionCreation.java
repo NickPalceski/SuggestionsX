@@ -1,4 +1,4 @@
-package nick.boptart.suggestionsX.util;
+package nick.boptart.suggestionsX.suggestion;
 
 import nick.boptart.suggestionsX.SuggestionsX;
 import nick.boptart.suggestionsX.manager.ConfigManager;

@@ -1,13 +1,12 @@
 package nick.boptart.suggestionsX.command;
 
 import nick.boptart.suggestionsX.manager.PlayerManager;
-import nick.boptart.suggestionsX.util.SuggestionCreation;
+import nick.boptart.suggestionsX.suggestion.SuggestionCreation;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
 import java.util.UUID;
 
 public class CreateSuggestionCommand implements CommandExecutor {

@@ -2,20 +2,12 @@ package nick.boptart.suggestionsX.command;
 
 import nick.boptart.suggestionsX.gui.AdminMainMenu;
 import nick.boptart.suggestionsX.gui.MainMenu;
-import nick.boptart.suggestionsX.SuggestionsX;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class SuggestionsCommand implements CommandExecutor {
-
-    private final SuggestionsX plugin;
-
-    public SuggestionsCommand(SuggestionsX plugin) {
-        this.plugin = plugin;
-    }
-
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -40,8 +32,9 @@ public class SuggestionsCommand implements CommandExecutor {
 
         } else if (args[0].equalsIgnoreCase("reload")) {
 
-            return new ReloadSuggestionsCommand(plugin).onCommand(sender, command, label, args);
+            return new ReloadSuggestionsCommand().onCommand(sender, command, label, args);
 
+            //TODO make creations in the GUI instead of chat...
         } else if (args[0].equalsIgnoreCase("create")) {
 
             return new CreateSuggestionCommand().onCommand(sender, command, label, args);

@@ -3,7 +3,6 @@ package nick.boptart.suggestionsX;
 import nick.boptart.suggestionsX.command.SuggestionsCommand;
 import nick.boptart.suggestionsX.listener.*;
 import nick.boptart.suggestionsX.manager.ConfigManager;
-import nick.boptart.suggestionsX.manager.PlayerManager;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -28,18 +27,16 @@ public final class SuggestionsX extends JavaPlugin {
         configManager = new ConfigManager(this);
         configManager.initialize();
 
-        PlayerManager.initialize(this);
-
         //Register listeners
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
         getServer().getPluginManager().registerEvents(new ChatListener(), this);
         getServer().getPluginManager().registerEvents(new MainMenuListener(), this);
-        getServer().getPluginManager().registerEvents(new OwnSuggestionsListener(this), this);
+        getServer().getPluginManager().registerEvents(new OwnSuggestionsListener(), this);
         getServer().getPluginManager().registerEvents(new ServerSuggestionsListener(), this);
         getServer().getPluginManager().registerEvents(new PendingMenuListener(), this);
 
         //handles Main Menu and other commands... (second argument)
-        getCommand("suggestions").setExecutor(new SuggestionsCommand(this));
+        getCommand("suggestions").setExecutor(new SuggestionsCommand());
     }
 
 

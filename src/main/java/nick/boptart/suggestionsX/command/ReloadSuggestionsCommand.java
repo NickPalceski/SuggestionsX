@@ -12,8 +12,8 @@ public class ReloadSuggestionsCommand implements CommandExecutor {
 
     private final SuggestionsX plugin;
 
-    public ReloadSuggestionsCommand(SuggestionsX plugin) {
-        this.plugin = plugin;
+    public ReloadSuggestionsCommand() {
+        this.plugin = SuggestionsX.getInstance();
     }
 
     //reload both Config and suggestionData files.
@@ -30,12 +30,13 @@ public class ReloadSuggestionsCommand implements CommandExecutor {
             return true;
         }
 
+        //TODO Fix reloading config...
+
         plugin.reloadConfig();
         ConfigManager.getConfigManager().loadConfig();
-        sender.sendMessage(ChatColor.GREEN + "SuggestionsX config reloaded!");
-
         SuggestionsX.getConfigManager().reloadSuggestionDataFiles();
-        sender.sendMessage(ChatColor.GREEN + "SuggestionsX suggestion data reloaded!");
+
+        sender.sendMessage(ChatColor.GREEN + "SuggestionsX config reloaded!");
         return true;
     }
 }
