@@ -1,7 +1,7 @@
-package nick.boptart.suggestionsX.gui;
+package nick.boptart.suggestionsX.menu;
 
 import nick.boptart.suggestionsX.manager.ConfigManager;
-import nick.boptart.suggestionsX.util.MenuUtil;
+import nick.boptart.suggestionsX.util.menu.MenuUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 

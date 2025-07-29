@@ -1,27 +1,15 @@
 package nick.boptart.suggestionsX.listener;
-
-import nick.boptart.suggestionsX.SuggestionsX;
-import nick.boptart.suggestionsX.gui.AdminMainMenu;
-import nick.boptart.suggestionsX.gui.MainMenu;
-import nick.boptart.suggestionsX.gui.PendingMenu;
 import nick.boptart.suggestionsX.manager.ConfigManager;
-import nick.boptart.suggestionsX.suggestion.Suggestion;
-import nick.boptart.suggestionsX.util.ListenerUtil;
+import nick.boptart.suggestionsX.util.listener.ListenerUtil;
+import nick.boptart.suggestionsX.util.listener.PendingListenerUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
-
-import java.util.UUID;
 
 public class PendingMenuListener implements Listener {
 
@@ -41,7 +29,17 @@ public class PendingMenuListener implements Listener {
             event.setCancelled(true);
             if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
 
-            ListenerUtil.handlePendingClicks(clickedItem, player, event);
+            String clickedItemName = clickedItem.getItemMeta() != null
+                    ? ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName())
+                    : "";
+
+            // Get current page number from the title (assuming last word is the page number)
+            int page = ListenerUtil.getPageNumberFromTitle(invTitle);
+            PendingListenerUtil.handlePageClicks(clickedItemName, page, player);
+
+            ListenerUtil.handleBackButtonClick(clickedItem, player);
+
+            PendingListenerUtil.handleSuggestionClicks(event, clickedItem, player);
         }
     }
 

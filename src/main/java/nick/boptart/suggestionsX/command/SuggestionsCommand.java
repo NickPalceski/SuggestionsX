@@ -1,7 +1,7 @@
 package nick.boptart.suggestionsX.command;
 
-import nick.boptart.suggestionsX.gui.AdminMainMenu;
-import nick.boptart.suggestionsX.gui.MainMenu;
+import nick.boptart.suggestionsX.menu.AdminMainMenu;
+import nick.boptart.suggestionsX.menu.MainMenu;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

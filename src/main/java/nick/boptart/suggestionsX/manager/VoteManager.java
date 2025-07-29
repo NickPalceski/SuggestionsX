@@ -1,6 +1,6 @@
 package nick.boptart.suggestionsX.manager;
 
-import nick.boptart.suggestionsX.gui.AdminSuggestionsMenu;
+import nick.boptart.suggestionsX.menu.AdminSuggestionsMenu;
 import org.bukkit.entity.Player;
 import nick.boptart.suggestionsX.suggestion.Suggestion;
 
@@ -24,7 +24,8 @@ public class VoteManager {
             ConfigManager.removeSuggestionFromConfig(clickedSuggestion);
             player.sendMessage("§cYou have deleted this suggestion.");
             player.closeInventory();
-            AdminSuggestionsMenu.openAdminSuggestionsGUI(player);
+            AdminSuggestionsMenu refreshedMenu = new AdminSuggestionsMenu();
+            refreshedMenu.openAdminSuggestionsGUI(player, 1);
         }
     }
 

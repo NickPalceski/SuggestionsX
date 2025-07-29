@@ -1,8 +1,7 @@
 package nick.boptart.suggestionsX.listener;
 
-import nick.boptart.suggestionsX.gui.*;
 import nick.boptart.suggestionsX.manager.ConfigManager;
-import nick.boptart.suggestionsX.util.ListenerUtil;
+import nick.boptart.suggestionsX.util.listener.ListenerUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

@@ -1,7 +1,8 @@
 package nick.boptart.suggestionsX.listener;
 
 import nick.boptart.suggestionsX.manager.ConfigManager;
-import nick.boptart.suggestionsX.util.ListenerUtil;
+import nick.boptart.suggestionsX.util.listener.ListenerUtil;
+import nick.boptart.suggestionsX.util.listener.OwnListenerUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -29,7 +30,17 @@ public class OwnSuggestionsListener implements Listener {
             event.setCancelled(true);
             if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
 
-            ListenerUtil.handleOwnMenuClicks(clickedItem, player, event);
+            String clickedItemName = clickedItem.getItemMeta() != null
+                    ? ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName())
+                    : "";
+
+            // Get current page number from the title (assuming last word is the page number)
+            int page = ListenerUtil.getPageNumberFromTitle(invTitle);
+            OwnListenerUtil.handlePageClicks(clickedItemName, page, player);
+
+            ListenerUtil.handleBackButtonClick(clickedItem, player);
+
+            OwnListenerUtil.handleSuggestionClicks(event, clickedItem, player);
         }
     }
 }
