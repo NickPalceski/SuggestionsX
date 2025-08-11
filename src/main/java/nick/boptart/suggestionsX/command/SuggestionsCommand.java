@@ -38,12 +38,7 @@ public class SuggestionsCommand implements CommandExecutor {
         } else if (args[0].equalsIgnoreCase("create")) {
 
             return new CreateSuggestionCommand().onCommand(sender, command, label, args);
-
         }
-
         return false;
-
     }
-
-
 }

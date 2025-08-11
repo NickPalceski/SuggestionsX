@@ -40,10 +40,10 @@ public class ConfigManager {
         pendingConfig.set("pending." + suggestion.getUniqueID(), null);
 
         try {
-            pendingConfig.save(suggestionsFile);
+            pendingConfig.save(pendingFile);
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println(ChatColor.RED + "Could not save suggestions file!");
+            System.out.println(ChatColor.RED + "Could not save pending file!");
         }
     }
 
@@ -114,7 +114,8 @@ public class ConfigManager {
                     uuid,
                     pendingConfig.getString(path + ".title"),
                     pendingConfig.getString(path + ".description"),
-                    pendingConfig.getString(path + ".suggester")
+                    pendingConfig.getString(path + ".suggester"),
+                    pendingConfig.getInt(path + ".status", 0)
             );
         }
 
@@ -124,12 +125,17 @@ public class ConfigManager {
                     uuid,
                     suggestionsConfig.getString(path + ".title"),
                     suggestionsConfig.getString(path + ".description"),
-                    suggestionsConfig.getString(path + ".suggester")
+                    suggestionsConfig.getString(path + ".suggester"),
+                    suggestionsConfig.getInt(path + ".status", 1)
             );
         }
 
         System.out.println("No suggestion found for UUID: " + uuid);
         return null;
+    }
+
+    public static boolean removeSuggestionByUUID(List<Suggestion> suggestions, UUID uuid) {
+        return suggestions.removeIf(suggestion -> suggestion.getUniqueID().equals(uuid));
     }
 
 
@@ -262,7 +268,7 @@ public class ConfigManager {
 
 
 
-    public static void saveSuggestions() {
+    public static void saveSuggestionsToFile() {
         FileConfiguration suggestionsConfig = configManager.getSuggestionsConfig();
 
         ConfigurationSection suggestionSection = suggestionsConfig.getConfigurationSection("suggestions");
@@ -271,7 +277,7 @@ public class ConfigManager {
         }
 
         Set<String> existingKeys = suggestionSection.getKeys(false);
-        for (Suggestion suggestion : configManager.suggestions) {
+        for (Suggestion suggestion : suggestions) {
             String path = "suggestions." + suggestion.getUniqueID();
 
             if (!existingKeys.contains(suggestion.getUniqueID().toString())) {
@@ -279,10 +285,11 @@ public class ConfigManager {
                 suggestionsConfig.set(path + ".title", suggestion.getTitle());
                 suggestionsConfig.set(path + ".description", suggestion.getDescription());
                 suggestionsConfig.set(path + ".suggester", suggestion.getCreator());
-                suggestionsConfig.set(path + ".totalVotes", suggestion.totalVotes);
-                suggestionsConfig.set(path + ".posVotes", suggestion.posVotes);
-                suggestionsConfig.set(path + ".negVotes", suggestion.negVotes);
-                //Add voters to the Set of the suggestion(s)?
+                suggestionsConfig.set(path + ".status", suggestion.getStatus());
+                suggestionsConfig.set(path + ".posVotes", suggestion.getPosVotes());
+                suggestionsConfig.set(path + ".negVotes", suggestion.getNegVotes());
+
+                //TODO Add voters to the Set of the suggestion(s)?
                 suggestionsConfig.set(path + ".posVoters", suggestion.getUpVoters());
                 suggestionsConfig.set(path + ".negVoters", suggestion.getDownVoters());
             }
@@ -306,13 +313,12 @@ public class ConfigManager {
 
         pendingConfig.set("pending", null); // Clear old data before saving
 
-        System.out.println("💾 Saving " + configManager.pendingSuggestions.size() + " pending suggestions...");
-
-        for (Suggestion suggestion : configManager.pendingSuggestions) {
+        for (Suggestion suggestion : pendingSuggestions) {
             String path = "pending." + suggestion.getUniqueID(); // Ensure UUID is stored correctly
             pendingConfig.set(path + ".title", suggestion.getTitle());
             pendingConfig.set(path + ".description", suggestion.getDescription());
             pendingConfig.set(path + ".suggester", suggestion.getCreator());
+            pendingConfig.set(path + ".status", suggestion.getStatus());
 
             System.out.println("Saved pending: " + suggestion.getTitle() + " (UUID: " + suggestion.getUniqueID() + ")");
         }
@@ -337,12 +343,11 @@ public class ConfigManager {
                     String title = suggestionsConfig.getString("suggestions." + key + ".title");
                     String description = suggestionsConfig.getString("suggestions." + key + ".description");
                     String suggester = suggestionsConfig.getString("suggestions." + key + ".suggester");
-                    int totalVotes = suggestionsConfig.getInt("suggestions." + key + ".totalVotes");
                     int posVotes = suggestionsConfig.getInt("suggestions." + key + ".posVotes");
                     int negVotes = suggestionsConfig.getInt("suggestions." + key + ".negVotes");
+                    int status = suggestionsConfig.getInt("suggestions." + key + ".status", 0); // Default to 0 if not set
 
-                    Suggestion suggestion = new Suggestion(title, description, suggester);
-                    suggestion.totalVotes = totalVotes;
+                    Suggestion suggestion = new Suggestion(title, description, suggester, status);
                     suggestion.posVotes = posVotes;
                     suggestion.negVotes = negVotes;
                     suggestions.add(suggestion);
@@ -361,8 +366,9 @@ public class ConfigManager {
                 String title = pendingConfig.getString("pending." + key + ".title");
                 String description = pendingConfig.getString("pending." + key + ".description");
                 String suggester = pendingConfig.getString("pending." + key + ".suggester");
+                int status = pendingConfig.getInt("pending." + key + ".status", 0); // Default to 0 if not set
 
-                Suggestion suggestion = new Suggestion(title, description, suggester);
+                Suggestion suggestion = new Suggestion(title, description, suggester, status);
                 pendingSuggestions.add(suggestion);
 
                 System.out.println("Loaded pending: " + title + " (" + key + ")");

@@ -20,11 +20,12 @@ public class OwnMenuUtil {
 
     public static void fillMenuSuggestions(Player player, int page, Inventory ownMenu) {
         File playerFile = PlayerManager.getPlayerFile(player.getUniqueId(), plugin);
-        List<Suggestion> suggestions = PlayerManager.getPlayerSuggestions(playerFile);
+        List<Suggestion> playerSuggestions = PlayerManager.getPlayerSuggestions(playerFile);
+
         int suggestionsPerPage = 45;
         int start = (page - 1) * suggestionsPerPage;
-        int end = Math.min(start + suggestionsPerPage, suggestions.size());
-        List<Suggestion> pageSuggestions = suggestions.subList(start, end);
+        int end = Math.min(start + suggestionsPerPage, playerSuggestions.size());
+        List<Suggestion> pageSuggestions = playerSuggestions.subList(start, end);
 
         int slot = 0;
         for (Suggestion suggestion : pageSuggestions) {

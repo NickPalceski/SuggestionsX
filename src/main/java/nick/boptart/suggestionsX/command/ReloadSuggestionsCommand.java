@@ -10,11 +10,7 @@ import org.bukkit.entity.Player;
 
 public class ReloadSuggestionsCommand implements CommandExecutor {
 
-    private final SuggestionsX plugin;
-
-    public ReloadSuggestionsCommand() {
-        this.plugin = SuggestionsX.getInstance();
-    }
+    private final SuggestionsX plugin = SuggestionsX.getInstance();
 
     //reload both Config and suggestionData files.
     @Override
@@ -30,11 +26,11 @@ public class ReloadSuggestionsCommand implements CommandExecutor {
             return true;
         }
 
-        //TODO Fix reloading config...
+        //TODO Fix reloading config...(Should save and reload)
 
         plugin.reloadConfig();
-        ConfigManager.getConfigManager().loadConfig();
-        SuggestionsX.getConfigManager().reloadSuggestionDataFiles();
+        ConfigManager.loadConfig();
+        ConfigManager.reloadSuggestionDataFiles();
 
         sender.sendMessage(ChatColor.GREEN + "SuggestionsX config reloaded!");
         return true;

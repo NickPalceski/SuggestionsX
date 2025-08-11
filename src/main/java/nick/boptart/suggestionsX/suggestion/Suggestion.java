@@ -1,14 +1,14 @@
 package nick.boptart.suggestionsX.suggestion;
 
-import nick.boptart.suggestionsX.manager.ConfigManager;
-import org.bukkit.ChatColor;
+import nick.boptart.suggestionsX.manager.PlayerManager;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 public class Suggestion {
-
+    //TODO add validation for title and description length
     private static final int TITLE_MAX_LENGTH = 50;
     private static final int DESC_MAX_LENGTH = 200;
 
@@ -19,19 +19,19 @@ public class Suggestion {
     private final String creator;
     private final String title;
     private final String description;
-    private final int status;                 //0: pending, 1: approved, 2: denied
+    private int status;                 //0: pending, 1: approved, 2: denied
 
 
     public int totalVotes;
     public int posVotes;
     public int negVotes;
 
-    // Constructor for new suggestions (Generates a new UUID)
+    // Constructor for new player suggestions (Generates a new UUID)
     public Suggestion(String title, String description, String creator) {
         this.uniqueID = UUID.randomUUID();
-        this.creator = creator;
         this.title = title;
         this.description = description;
+        this.creator = creator;
         this.status = 0;
 
         this.totalVotes = 0;
@@ -41,14 +41,30 @@ public class Suggestion {
         this.upVoters = new HashSet<>();
         this.downVoters = new HashSet<>();
     }
+    // Constructor for new admin created suggestions. Handles status (Generates a new UUID)
+    public Suggestion(String title, String description, String creator, int status) {
+        this.uniqueID = UUID.randomUUID();
+        this.title = title;
+        this.description = description;
+        this.creator = creator;
+        this.status = status;
+
+        this.totalVotes = 0;
+        this.posVotes = 0;
+        this.negVotes = 0;
+
+        this.upVoters = new HashSet<>();
+        this.downVoters = new HashSet<>();
+    }
+
 
     // Constructor for loading suggestions from a file (Uses existing UUID)
-    public Suggestion(UUID uniqueID, String title, String description, String creator) {
+    public Suggestion(UUID uniqueID, String title, String description, String creator, int status) {
         this.uniqueID = uniqueID;
         this.creator = creator;
         this.title = title;
         this.description = description;
-        this.status = this.getStatus();
+        this.status = status;
 
         this.totalVotes = this.getTotalVotes();
         this.posVotes = this.getPosVotes();
@@ -66,22 +82,34 @@ public class Suggestion {
 
     public void decreaseNegVotes(){negVotes--;}
 
-    public int updateStatus(int newStatus) {
+    public void updateStatus(int newStatus) {
         if (this.status == newStatus) {
             throw new IllegalArgumentException("Status is already " + newStatus);
-        } else if (newStatus == 0) {
-            return 0;
-        } else if (newStatus == 1) {
-            return 1;
-        } else if (newStatus == 2) {
-            return 2;
-        } else {
-            throw new IllegalArgumentException("Invalid status");
         }
+
+        File playerFile = PlayerManager.getPlayerFileByName(this.creator);
+
+        switch(newStatus) {
+            case 0:
+                this.status = 0;
+                PlayerManager.savePlayerFile(playerFile);
+                break;
+            case 1:
+                this.status = 1;
+                PlayerManager.savePlayerFile(playerFile);
+                break;
+            case 2:
+                this.status = 2;
+                PlayerManager.savePlayerFile(playerFile);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid status");
+        }
+
     }
 
     public Set<UUID> getUpVoters() {
-        return this.upVoters;
+        return upVoters;
     }
     public Set<UUID> getDownVoters() {
         return downVoters;
@@ -122,28 +150,6 @@ public class Suggestion {
         return negVotes;
     }
 
-
-
-    public static Suggestion getSuggestionByTitle(String title) {
-
-        System.out.println("Pending suggestions count: " + ConfigManager.getPendingSuggestions().size());
-
-        for (Suggestion suggestion : ConfigManager.getPendingSuggestions()) {
-
-            if (suggestion.getTitle().equalsIgnoreCase(title)) {
-                System.out.println("Found exact match: " + suggestion.getTitle());
-                return suggestion;
-            }
-
-            if (ChatColor.stripColor(suggestion.getTitle()).equalsIgnoreCase(ChatColor.stripColor(title))) {
-                System.out.println("Found match after stripping color codes: " + suggestion.getTitle());
-                return suggestion;
-            }
-        }
-
-        System.out.println("Suggestion not found for title: " + title);
-        return null;
-    }
 
 
 }

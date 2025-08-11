@@ -5,7 +5,6 @@ import nick.boptart.suggestionsX.suggestion.Suggestion;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
@@ -99,7 +98,7 @@ public class PlayerManager {
                 return file;
             }
         }
-
+        //TODO handle case where player name is changed?
         System.out.println("No matching file found for player: " + playerName);
         return null;
     }
@@ -116,7 +115,7 @@ public class PlayerManager {
         if (suggestion != null) {
             return getPlayerUUIDByName(suggestion.getCreator());
         }
-        return null; // Return null if no suggestion or UUID is found
+        return null;
     }
 
     public static void addSuggestionToPlayer(Suggestion suggestion, String playerName) {
@@ -211,7 +210,7 @@ public class PlayerManager {
         }
     }
 
-    public static File getPlayerFile(UUID playerUUID, JavaPlugin plugin) {
+    public static File getPlayerFile(UUID playerUUID, SuggestionsX plugin) {
         String fileName = ConfigManager.getConfigManager().getPlayerFileCache().get(playerUUID);
         if (fileName != null) {
             return new File(plugin.getDataFolder(), "SuggestionData/PlayerData/" + fileName);

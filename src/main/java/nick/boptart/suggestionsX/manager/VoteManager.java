@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public class VoteManager {
 
+    //TODO implement a cooldown for voting so players can't spam vote
 
     public static boolean hasVotedNeg(UUID playerUUID, Suggestion suggestion) {
         return suggestion.getDownVoters().contains(playerUUID); // Returns false if the UUID already exists
@@ -17,11 +18,17 @@ public class VoteManager {
         return suggestion.getUpVoters().contains(playerUUID);
     }
 
-
     public static void handleAdminDelete(Suggestion clickedSuggestion, Player player) {
         // Admin delete shortcut
         if (player.hasPermission("suggestions.admin")) {
+            // Remove the suggestion from the creators file (saves player file)
+            PlayerManager.removeSuggestionFromPlayer(clickedSuggestion, player.getName());
+
             ConfigManager.removeSuggestionFromConfig(clickedSuggestion);
+            // Remove the suggestion from the in-memory list
+            ConfigManager.removeSuggestionByUUID(ConfigManager.getSuggestions(), clickedSuggestion.getUniqueID());
+            ConfigManager.saveSuggestionsToFile();
+
             player.sendMessage("§cYou have deleted this suggestion.");
             player.closeInventory();
             AdminSuggestionsMenu refreshedMenu = new AdminSuggestionsMenu();
@@ -41,11 +48,17 @@ public class VoteManager {
             clickedSuggestion.decreasePosVotes();
             clickedSuggestion.decreaseTotalVotes();
             player.sendMessage("§cRemoved your upvote.");
+            // save suggestions to file (saves votes and updates UI)
+            ConfigManager.saveSuggestionsToFile();
         } else {
             // Remove downvote if it existed
             if (downVoted) {
                 removePlayerFromDownVoters(playerUUID, clickedSuggestion);
                 clickedSuggestion.decreaseNegVotes();
+                clickedSuggestion.decreaseTotalVotes();
+                player.sendMessage("§cRemoved your downvote.");
+                // save suggestions to file (saves votes and updates UI)
+                ConfigManager.saveSuggestionsToFile();
             }
 
             // Add upvote
@@ -53,6 +66,8 @@ public class VoteManager {
             clickedSuggestion.increasePosVotes();
             clickedSuggestion.increaseTotalVotes(clickedSuggestion);
             player.sendMessage("§aYour upvote has been added!");
+            // save suggestions to file (saves votes and updates UI)
+            ConfigManager.saveSuggestionsToFile();
         }
     }
 
@@ -68,11 +83,17 @@ public class VoteManager {
             clickedSuggestion.decreaseNegVotes();
             clickedSuggestion.decreaseTotalVotes();
             player.sendMessage("§cRemoved your downvote.");
+            // save suggestions to file (saves votes and updates UI)
+            ConfigManager.saveSuggestionsToFile();
         } else {
             // Remove upvote if it existed
             if (upVoted) {
                 removePlayerFromUpVoters(playerUUID, clickedSuggestion);
                 clickedSuggestion.decreasePosVotes();
+                clickedSuggestion.decreaseTotalVotes();
+                player.sendMessage("§cRemoved your upvote.");
+                // save suggestions to file (saves votes and updates UI)
+                ConfigManager.saveSuggestionsToFile();
             }
 
             // Add downvote
@@ -80,6 +101,8 @@ public class VoteManager {
             clickedSuggestion.increaseNegVotes();
             clickedSuggestion.increaseTotalVotes(clickedSuggestion);
             player.sendMessage("§aYour downvote has been added!");
+            // save suggestions to file (saves votes and updates UI)
+            ConfigManager.saveSuggestionsToFile();
         }
     }
 

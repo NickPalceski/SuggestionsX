@@ -48,7 +48,7 @@ public class MenuUtil {
 
     //TODO add material and color to config (so players can change)
     public static void fillMainMenu(Player player, Inventory menu) {
-        // Create pending item
+        // Create pending suggestions item
         ItemStack pending = new ItemStack(Material.YELLOW_TERRACOTTA, 1);
         ItemMeta pendingMeta = pending.getItemMeta();
         pendingMeta.setDisplayName(ChatColor.GOLD + "Pending Suggestions");
@@ -57,7 +57,7 @@ public class MenuUtil {
         // Create server suggestions item
         ItemStack suggestions = new ItemStack(Material.BOOK, 1);
         ItemMeta suggestionsMeta = suggestions.getItemMeta();
-        suggestionsMeta.setDisplayName(ChatColor.WHITE + "Suggestions");
+        suggestionsMeta.setDisplayName(ChatColor.WHITE + "Server Suggestions");
         suggestions.setItemMeta(suggestionsMeta);
 
         // Create own suggestions item
@@ -68,11 +68,15 @@ public class MenuUtil {
             headMeta.setDisplayName(ChatColor.YELLOW + "Your Suggestions");
             ownSuggestions.setItemMeta(headMeta);
         }
+        if (!(player.hasPermission("suggestionsx.admin"))){
+            menu.setItem(11, suggestions);
+            menu.setItem(15, ownSuggestions);
 
-        // Add items to the inventory
-        menu.setItem(11, pending);
-        menu.setItem(13, suggestions);
-        menu.setItem(15, ownSuggestions);
+        } else {
+            menu.setItem(11, pending);
+            menu.setItem(13, suggestions);
+            menu.setItem(15, ownSuggestions);
+        }
     }
 
     public static void createSuggestionMetaKey(ItemMeta meta, Suggestion suggestion) {

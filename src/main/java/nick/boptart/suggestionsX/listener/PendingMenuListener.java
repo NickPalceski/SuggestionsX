@@ -16,16 +16,15 @@ public class PendingMenuListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
 
-        Player player = (Player) event.getWhoClicked();
         Inventory inventory = event.getClickedInventory();
-        String invTitle = ChatColor.stripColor(event.getView().getTitle());
-        ItemStack clickedItem = event.getCurrentItem();
-        String pendingMenuTitle = ChatColor.stripColor(ConfigManager.getMenuTitle("pending-menu-title"));
-
         if (inventory == null) return;
 
+        ItemStack clickedItem = event.getCurrentItem();
+        String invTitle = ChatColor.stripColor(event.getView().getTitle());
+        String menuTitle = ChatColor.stripColor(ConfigManager.getMenuTitle("pending-menu-title"));
+
         //Check if the title of the inventory is the pending menu title in config
-        if (invTitle.startsWith(pendingMenuTitle)) {
+        if (invTitle.startsWith(menuTitle)) {
             event.setCancelled(true);
             if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
 
@@ -34,6 +33,8 @@ public class PendingMenuListener implements Listener {
                     : "";
 
             // Get current page number from the title (assuming last word is the page number)
+            Player player = (Player) event.getWhoClicked();
+
             int page = ListenerUtil.getPageNumberFromTitle(invTitle);
             PendingListenerUtil.handlePageClicks(clickedItemName, page, player);
 

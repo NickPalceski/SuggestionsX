@@ -16,22 +16,21 @@ public class MainMenuListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
 
-        Player player = (Player) event.getWhoClicked();
         Inventory inventory = event.getClickedInventory();
-        String menuTitle = ChatColor.stripColor(event.getView().getTitle());
-        ItemStack clickedItem = event.getCurrentItem();
-
-        String playerConfigTitle = ChatColor.stripColor(ConfigManager.getMenuTitle("player-menu-title"));
-        String adminConfigTitle = ChatColor.stripColor(ConfigManager.getMenuTitle("admin-menu-title"));
-
         if (inventory == null) return;
 
-        //Check if the title of the inventory is the main menu title in config
-        if ((playerConfigTitle.equals(menuTitle)) || (adminConfigTitle.equals(menuTitle))) {
+        String invTitle = ChatColor.stripColor(event.getView().getTitle());
+        String playerMenuTitle = ChatColor.stripColor(ConfigManager.getMenuTitle("player-menu-title"));
+        String adminMenuTitle = ChatColor.stripColor(ConfigManager.getMenuTitle("admin-menu-title"));
 
+        //Check if the title of the inventory is the main menu title in config
+        if ((playerMenuTitle.equals(invTitle)) || (adminMenuTitle.equals(invTitle))) {
+            ItemStack clickedItem = event.getCurrentItem();
             event.setCancelled(true);
+
             if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
 
+            Player player = (Player) event.getWhoClicked();
             ListenerUtil.handleMainMenuClicks(clickedItem, player);
         }
     }

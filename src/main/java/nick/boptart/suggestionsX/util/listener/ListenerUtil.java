@@ -12,7 +12,7 @@ public class ListenerUtil {
     public static void handleMainMenuClicks(ItemStack clickedItem, Player player) {
 
         //Server suggestions menu
-        if (clickedItem.getType() == Material.BOOK && clickedItem.getItemMeta().getDisplayName().equals("View Suggestions")) {
+        if (clickedItem.getType() == Material.BOOK && clickedItem.getItemMeta().getDisplayName().equals(ChatColor.WHITE + "Server Suggestions")) {
 
             if (player.hasPermission("suggestions.admin")) {
                 AdminSuggestionsMenu refreshedMenu = new AdminSuggestionsMenu();
@@ -68,7 +68,7 @@ public class ListenerUtil {
 
         //save changes?
         ConfigManager.savePendingSuggestions();
-        ConfigManager.saveSuggestions();
+        ConfigManager.saveSuggestionsToFile();
         player.closeInventory();
         PendingMenu refreshedMenu = new PendingMenu();
         refreshedMenu.openPendingSuggestionsMenu(player, 1);
@@ -83,7 +83,7 @@ public class ListenerUtil {
 
         //save changes?
         ConfigManager.savePendingSuggestions();
-        ConfigManager.saveSuggestions();
+        ConfigManager.saveSuggestionsToFile();
         player.closeInventory();
         PendingMenu refreshedMenu = new PendingMenu();
         refreshedMenu.openPendingSuggestionsMenu(player, 1);

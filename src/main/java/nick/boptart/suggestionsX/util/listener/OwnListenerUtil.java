@@ -20,8 +20,6 @@ import java.util.UUID;
 
 public class OwnListenerUtil {
 
-    private static final SuggestionsX plugin = SuggestionsX.getInstance();
-
     public static void handleSuggestionClicks(InventoryClickEvent clickEvent, ItemStack clickedItem, Player player) {
         ClickType click = clickEvent.getClick();
         //handle own suggestions clicking
@@ -73,36 +71,37 @@ public class OwnListenerUtil {
     }
 
     private static void handlePendingClick(Suggestion clickedSuggestion, Player player) {
-        System.out.println("Removing pending suggestion...");
-        boolean removed = ConfigManager.getPendingSuggestions().remove(clickedSuggestion);
-        System.out.println("Pending suggestions after removal: " + ConfigManager.getPendingSuggestions().size());
-        System.out.println(removed ? "Suggestion removed from pending list." : "Failed to remove suggestion from pending list.");
+        player.sendMessage(ChatColor.YELLOW + "Removing pending suggestion...");
+        // Remove from in memory pending list
+        boolean removed = ConfigManager.removeSuggestionByUUID(ConfigManager.getPendingSuggestions(), clickedSuggestion.getUniqueID());
+        player.sendMessage(removed ? "Suggestion removed from pending list." : "Failed to remove suggestion from pending list.");
+        ConfigManager.savePendingSuggestions();
+        // Remove from pending file
+        ConfigManager.removeSuggestionFromPendingConfig(clickedSuggestion);
 
-        System.out.println("Removing from player file...");
+        player.sendMessage(ChatColor.YELLOW + "Removing from player file...");
         PlayerManager.removeSuggestionFromPlayer(clickedSuggestion, clickedSuggestion.getCreator());
 
-        ConfigManager.savePendingSuggestions();
-        PlayerManager.savePlayerFile(PlayerManager.getPlayerFile(PlayerManager.getCreatorUUID(clickedSuggestion.getCreator()), plugin));
         player.closeInventory();
         OwnSuggestionsMenu refreshedInv = new OwnSuggestionsMenu();
         refreshedInv.openOwnMenu(player,1);
     }
 
     private static void handleApprovedClick(Suggestion clickedSuggestion, Player player) {
-        System.out.println("Removing approved suggestion...");
-        boolean removedApproved = ConfigManager.getSuggestions().remove(clickedSuggestion);
-        System.out.println(removedApproved ? "Suggestion removed from suggestions list." : "Failed to remove suggestion from suggestions list.");
-
+        player.sendMessage(ChatColor.YELLOW + "Removing approved suggestion...");
+        boolean removedApproved = ConfigManager.removeSuggestionByUUID(ConfigManager.getSuggestions(), clickedSuggestion.getUniqueID());
+        player.sendMessage(removedApproved ? "Suggestion removed from suggestions list." : "Failed to remove suggestion from suggestions list.");
+        // Saves file's after removal
+        ConfigManager.removeSuggestionFromConfig(clickedSuggestion);
         PlayerManager.removeSuggestionFromPlayer(clickedSuggestion, clickedSuggestion.getCreator());
-
-        ConfigManager.saveSuggestions();
-        PlayerManager.savePlayerFile(PlayerManager.getPlayerFile(PlayerManager.getCreatorUUID(clickedSuggestion.getCreator()), plugin));
+        // Saves in memory suggestions to file
+        ConfigManager.saveSuggestionsToFile();
         OwnSuggestionsMenu refreshedInv1 = new OwnSuggestionsMenu();
         refreshedInv1.openOwnMenu(player,1);
     }
 
     private static void handleDeniedClick(Suggestion clickedSuggestion, Player player) {
-        System.out.println("Removing denied suggestion...");
+        player.sendMessage(ChatColor.YELLOW + "Removing denied suggestion...");
         PlayerManager.removeSuggestionFromPlayer(clickedSuggestion, clickedSuggestion.getCreator());
 
         int playerSuggestionCount = PlayerManager.getPlayerSuggestionCount(clickedSuggestion.getCreator());

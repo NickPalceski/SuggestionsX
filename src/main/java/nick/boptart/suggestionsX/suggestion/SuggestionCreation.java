@@ -130,16 +130,16 @@ public class SuggestionCreation {
                 Suggestion suggestion = new Suggestion(
                         suggestionData.get("title"),
                         suggestionData.get("description"),
-                        suggestionData.get("playerName")
-                );
+                        suggestionData.get("playerName"),
+                        1);
                 ConfigManager.getSuggestions().add(suggestion);
-                //TODO Add the suggestion UUID to the player's file
+
                 File suggesterFile = PlayerManager.getPlayerFileByName(suggestionData.get("playerName"));
                 if (suggesterFile != null) {
                     FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(suggesterFile);
-                    List<String> suggestions = playerConfig.getStringList("suggestions");
-                    suggestions.add(suggestion.getUniqueID().toString());
-                    playerConfig.set("suggestions", suggestions);
+                    List<String> playerSuggestions = playerConfig.getStringList("suggestions");
+                    playerSuggestions.add(suggestion.getUniqueID().toString());
+                    playerConfig.set("suggestions", playerSuggestions);
 
                     try {
                         playerConfig.save(suggesterFile);
@@ -153,7 +153,7 @@ public class SuggestionCreation {
                     player.sendMessage("§cCould not find suggester's file.");
                 }
                 playersAddingSuggestion.remove(playerUUID);
-                ConfigManager.saveSuggestions();
+                ConfigManager.saveSuggestionsToFile();
                 player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Suggestion added to server suggestions:" + ChatColor.WHITE + " " + suggestion.getTitle());
                 player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.8f, 0.8f);
 

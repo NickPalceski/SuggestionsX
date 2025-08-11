@@ -17,22 +17,24 @@ public class OwnSuggestionsListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
 
-        Player player = (Player) event.getWhoClicked();
         Inventory inventory = event.getClickedInventory();
-        String invTitle = ChatColor.stripColor(event.getView().getTitle());
-        ItemStack clickedItem = event.getCurrentItem();
-        String menuTitle = ChatColor.stripColor(ConfigManager.getMenuTitle("own-suggestions-title"));
-
         if (inventory == null) return;
+
+        String invTitle = ChatColor.stripColor(event.getView().getTitle());
+        String menuTitle = ChatColor.stripColor(ConfigManager.getMenuTitle("own-suggestions-title"));
 
         //Check if the title of the inventory is the own suggestions menu title in config
         if (invTitle.startsWith(menuTitle)) {
+            ItemStack clickedItem = event.getCurrentItem();
             event.setCancelled(true);
+
             if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
 
             String clickedItemName = clickedItem.getItemMeta() != null
                     ? ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName())
                     : "";
+
+            Player player = (Player) event.getWhoClicked();
 
             // Get current page number from the title (assuming last word is the page number)
             int page = ListenerUtil.getPageNumberFromTitle(invTitle);
