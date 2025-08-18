@@ -36,26 +36,26 @@ public class OwnListenerUtil {
 
             String strUUID = suggestionMeta.getPersistentDataContainer().get(key, PersistentDataType.STRING);
             UUID uuid = UUID.fromString(strUUID);
-            Suggestion clickedSuggestion = ConfigManager.getSuggestionByUUID(uuid);
+            Suggestion clickedSuggestion = PlayerManager.getSuggestionByUUID(uuid);
 
             if (clickedSuggestion == null) {
                 player.sendMessage(ChatColor.RED + "Suggestion not found!");
                 return;
             }
 
-            int currStatus = clickedSuggestion.getStatus();
+            Suggestion.Status currStatus = clickedSuggestion.getStatus();
 
             if (click == ClickType.LEFT) {
                 switch (currStatus) {
-                    case 0:  // Pending
+                    case PENDING:  // Pending
                         handlePendingClick(clickedSuggestion, player);
                         break;
 
-                    case 1: // Approved
+                    case APPROVED: // Approved
                         handleApprovedClick(clickedSuggestion, player);
                         break;
 
-                    case 2: // Denied
+                    case DENIED: // Denied
                         handleDeniedClick(clickedSuggestion, player);
                         break;
 
@@ -74,10 +74,10 @@ public class OwnListenerUtil {
         player.sendMessage(ChatColor.YELLOW + "Removing pending suggestion...");
         // Remove from in memory pending list
         boolean removed = ConfigManager.removeSuggestionByUUID(ConfigManager.getPendingSuggestions(), clickedSuggestion.getUniqueID());
-        player.sendMessage(removed ? "Suggestion removed from pending list." : "Failed to remove suggestion from pending list.");
-        ConfigManager.savePendingSuggestions();
-        // Remove from pending file
-        ConfigManager.removeSuggestionFromPendingConfig(clickedSuggestion);
+        player.sendMessage(removed ? ChatColor.GREEN + "Suggestion removed from pending list." : ChatColor.RED + "Failed to remove suggestion from pending list.");
+        // Remove from pending file and save
+        ConfigManager.removeSuggestionFromPendingFile(clickedSuggestion);
+        ConfigManager.savePendingSuggestionsToFile();
 
         player.sendMessage(ChatColor.YELLOW + "Removing from player file...");
         PlayerManager.removeSuggestionFromPlayer(clickedSuggestion, clickedSuggestion.getCreator());
@@ -90,9 +90,9 @@ public class OwnListenerUtil {
     private static void handleApprovedClick(Suggestion clickedSuggestion, Player player) {
         player.sendMessage(ChatColor.YELLOW + "Removing approved suggestion...");
         boolean removedApproved = ConfigManager.removeSuggestionByUUID(ConfigManager.getSuggestions(), clickedSuggestion.getUniqueID());
-        player.sendMessage(removedApproved ? "Suggestion removed from suggestions list." : "Failed to remove suggestion from suggestions list.");
+        player.sendMessage(removedApproved ? ChatColor.GREEN + "Suggestion removed from suggestions list." : ChatColor.RED + "Failed to remove suggestion from suggestions list.");
         // Saves file's after removal
-        ConfigManager.removeSuggestionFromConfig(clickedSuggestion);
+        ConfigManager.removeSuggestionFromFile(clickedSuggestion);
         PlayerManager.removeSuggestionFromPlayer(clickedSuggestion, clickedSuggestion.getCreator());
         // Saves in memory suggestions to file
         ConfigManager.saveSuggestionsToFile();

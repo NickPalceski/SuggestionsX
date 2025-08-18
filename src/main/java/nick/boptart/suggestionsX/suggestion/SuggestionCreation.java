@@ -58,13 +58,19 @@ public class SuggestionCreation {
                 Suggestion suggestion = new Suggestion(
                         suggestionData.get("title"),
                         suggestionData.get("description"),
-                        player.getName() // Use the player's name as the suggester
+                        player.getName(), // Use the player's name as the suggester
+                        Suggestion.Status.PENDING
                 );
 
                 ConfigManager.getPendingSuggestions().add(suggestion);
-                ConfigManager.savePendingSuggestions();
+                ConfigManager.savePendingSuggestionsToFile();
+
                 // Add the suggestion UUID to the player's file
                 File playerFile = PlayerManager.getPlayerFile(playerUUID, SuggestionsX.getInstance());
+
+//                //Refresh in-memory list
+//                ConfigManager.loadPendingSuggestions();
+
                 if (playerFile != null) {
                     FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
                     List<String> suggestions = playerConfig.getStringList("suggestions");
@@ -80,7 +86,6 @@ public class SuggestionCreation {
                         e.printStackTrace();
                         player.sendMessage("§cFailed to save your suggestion to player file.");
                     }
-
                 }
                 player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Suggestion pending:" + ChatColor.WHITE + " " + suggestion.getTitle());
                 player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.8f, 0.8f);
@@ -131,10 +136,14 @@ public class SuggestionCreation {
                         suggestionData.get("title"),
                         suggestionData.get("description"),
                         suggestionData.get("playerName"),
-                        1);
+                        Suggestion.Status.APPROVED);
                 ConfigManager.getSuggestions().add(suggestion);
 
+//                //Refresh in-memory list
+//                ConfigManager.loadSuggestions();
+
                 File suggesterFile = PlayerManager.getPlayerFileByName(suggestionData.get("playerName"));
+
                 if (suggesterFile != null) {
                     FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(suggesterFile);
                     List<String> playerSuggestions = playerConfig.getStringList("suggestions");

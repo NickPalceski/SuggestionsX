@@ -39,9 +39,8 @@ public final class SuggestionsX extends JavaPlugin {
     @Override
     public void onDisable() {
         //save all suggestions,config data, and player files on shutdown.
-        //TODO error in console on shutdown?
         ConfigManager.saveSuggestionsToFile();
-        ConfigManager.savePendingSuggestions();
+        ConfigManager.savePendingSuggestionsToFile();
         ConfigManager.savePlayerFiles();
 
     }

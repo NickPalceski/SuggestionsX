@@ -58,32 +58,38 @@ public class ListenerUtil {
     }
 
     public static void approveSuggestion(Suggestion clickedSuggestion, Player player) {
-        clickedSuggestion.updateStatus(1);
 
-        //remove from pending list and add to suggestions list.
-        ConfigManager.getPendingSuggestions().remove(clickedSuggestion);
-        ConfigManager.removeSuggestionFromPendingConfig(clickedSuggestion);
+        //remove from pending file and save
+        ConfigManager.removeSuggestionFromPendingFile(clickedSuggestion);
+        ConfigManager.savePendingSuggestionsToFile();
 
-        ConfigManager.getSuggestions().add(clickedSuggestion);
+        clickedSuggestion.setStatus(Suggestion.Status.APPROVED); // Update status to approved
 
-        //save changes?
-        ConfigManager.savePendingSuggestions();
+        //Add directly to suggestions file and save suggestions
+        ConfigManager.addSuggestionToFile(clickedSuggestion);
         ConfigManager.saveSuggestionsToFile();
+
+        //Refresh in-memory lists
+        ConfigManager.loadSuggestions();
+        ConfigManager.loadPendingSuggestions();
+
         player.closeInventory();
         PendingMenu refreshedMenu = new PendingMenu();
         refreshedMenu.openPendingSuggestionsMenu(player, 1);
     }
 
     public static void denySuggestion(Suggestion clickedSuggestion, Player player) {
-        clickedSuggestion.updateStatus(2);
 
-        //remove from pending list
-        ConfigManager.getPendingSuggestions().remove(clickedSuggestion);
-        ConfigManager.removeSuggestionFromPendingConfig(clickedSuggestion);
+        //remove from pending file and save
+        ConfigManager.removeSuggestionFromPendingFile(clickedSuggestion);
+        ConfigManager.savePendingSuggestionsToFile();
 
-        //save changes?
-        ConfigManager.savePendingSuggestions();
-        ConfigManager.saveSuggestionsToFile();
+        clickedSuggestion.setStatus(Suggestion.Status.DENIED);
+
+        //Refresh in-memory lists
+        ConfigManager.loadSuggestions();
+        ConfigManager.loadPendingSuggestions();
+
         player.closeInventory();
         PendingMenu refreshedMenu = new PendingMenu();
         refreshedMenu.openPendingSuggestionsMenu(player, 1);

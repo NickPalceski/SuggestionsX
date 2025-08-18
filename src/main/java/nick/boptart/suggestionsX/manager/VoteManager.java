@@ -22,11 +22,12 @@ public class VoteManager {
         // Admin delete shortcut
         if (player.hasPermission("suggestions.admin")) {
             // Remove the suggestion from the creators file (saves player file)
-            PlayerManager.removeSuggestionFromPlayer(clickedSuggestion, player.getName());
+            PlayerManager.removeSuggestionFromPlayer(clickedSuggestion, clickedSuggestion.getCreator());
 
-            ConfigManager.removeSuggestionFromConfig(clickedSuggestion);
-            // Remove the suggestion from the in-memory list
+            ConfigManager.removeSuggestionFromFile(clickedSuggestion);
+            // Remove the suggestion from the in-memory list?
             ConfigManager.removeSuggestionByUUID(ConfigManager.getSuggestions(), clickedSuggestion.getUniqueID());
+            //save suggestions to file (clears file and updates with in-memory list)
             ConfigManager.saveSuggestionsToFile();
 
             player.sendMessage("§cYou have deleted this suggestion.");

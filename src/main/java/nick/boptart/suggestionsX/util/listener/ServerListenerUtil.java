@@ -35,7 +35,7 @@ public class ServerListenerUtil {
 
             String strUUID = meta.getPersistentDataContainer().get(key, PersistentDataType.STRING);
             UUID uuid = UUID.fromString(strUUID);
-            Suggestion clickedSuggestion = ConfigManager.getSuggestionByUUID(uuid);
+            Suggestion clickedSuggestion = ConfigManager.getSuggestionByUUID(ConfigManager.getSuggestions(), uuid);
 
             if (clickedSuggestion == null) {
                 player.sendMessage(ChatColor.RED + "Suggestion not found!");

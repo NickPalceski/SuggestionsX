@@ -1,5 +1,6 @@
 package nick.boptart.suggestionsX.suggestion;
 
+import nick.boptart.suggestionsX.manager.ConfigManager;
 import nick.boptart.suggestionsX.manager.PlayerManager;
 
 import java.io.File;
@@ -19,30 +20,21 @@ public class Suggestion {
     private final String creator;
     private final String title;
     private final String description;
-    private int status;                 //0: pending, 1: approved, 2: denied
+    private Status status;
+
+    public enum Status {
+        PENDING,
+        APPROVED,
+        DENIED
+    }
 
 
     public int totalVotes;
     public int posVotes;
     public int negVotes;
 
-    // Constructor for new player suggestions (Generates a new UUID)
-    public Suggestion(String title, String description, String creator) {
-        this.uniqueID = UUID.randomUUID();
-        this.title = title;
-        this.description = description;
-        this.creator = creator;
-        this.status = 0;
-
-        this.totalVotes = 0;
-        this.posVotes = 0;
-        this.negVotes = 0;
-
-        this.upVoters = new HashSet<>();
-        this.downVoters = new HashSet<>();
-    }
-    // Constructor for new admin created suggestions. Handles status (Generates a new UUID)
-    public Suggestion(String title, String description, String creator, int status) {
+    // Constructor for player/admin suggestions (Generates a new UUID)
+    public Suggestion(String title, String description, String creator, Status status) {
         this.uniqueID = UUID.randomUUID();
         this.title = title;
         this.description = description;
@@ -57,9 +49,8 @@ public class Suggestion {
         this.downVoters = new HashSet<>();
     }
 
-
     // Constructor for loading suggestions from a file (Uses existing UUID)
-    public Suggestion(UUID uniqueID, String title, String description, String creator, int status) {
+    public Suggestion(UUID uniqueID, String title, String description, String creator, Status status) {
         this.uniqueID = uniqueID;
         this.creator = creator;
         this.title = title;
@@ -74,6 +65,14 @@ public class Suggestion {
         this.downVoters = this.getDownVoters();
     }
 
+    public Status getStatus(){
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
     public void increasePosVotes(){posVotes++;}
 
     public void decreasePosVotes(){posVotes--;}
@@ -81,32 +80,6 @@ public class Suggestion {
     public void increaseNegVotes(){negVotes++;}
 
     public void decreaseNegVotes(){negVotes--;}
-
-    public void updateStatus(int newStatus) {
-        if (this.status == newStatus) {
-            throw new IllegalArgumentException("Status is already " + newStatus);
-        }
-
-        File playerFile = PlayerManager.getPlayerFileByName(this.creator);
-
-        switch(newStatus) {
-            case 0:
-                this.status = 0;
-                PlayerManager.savePlayerFile(playerFile);
-                break;
-            case 1:
-                this.status = 1;
-                PlayerManager.savePlayerFile(playerFile);
-                break;
-            case 2:
-                this.status = 2;
-                PlayerManager.savePlayerFile(playerFile);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid status");
-        }
-
-    }
 
     public Set<UUID> getUpVoters() {
         return upVoters;
@@ -137,10 +110,6 @@ public class Suggestion {
     }
 
     public String getDescription() { return description; }
-
-    public int getStatus() {
-        return status;
-    }
 
     public int getTotalVotes() {
         return totalVotes;

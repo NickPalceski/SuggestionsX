@@ -128,15 +128,10 @@ public class PlayerManager {
             List<String> suggestions = playerConfig.getStringList("suggestions");
             suggestions.add(suggestion.getUniqueID().toString());
             playerConfig.set("suggestions", suggestions);
-            try {
-                playerConfig.save(playerFile);
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("§cFailed to save your vote. Please try again.");
-            }
+            savePlayerFile(playerFile);
         }
         else {
-            System.out.println("§cCould not find player file.");
+            System.out.println("Could not find player file.");
         }
 
     }
@@ -152,52 +147,43 @@ public class PlayerManager {
             suggestions.remove(suggestion.getUniqueID().toString());
             playerConfig.set("suggestions", suggestions);
 
-            try {
-                playerConfig.save(playerFile);
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("§cFailed to save player file.");
-            }
+            savePlayerFile(playerFile);
         }
         else {
-            System.out.println("§cCould not find player file.");
+            System.out.println("Could not find player file.");
         }
 
     }
 
     public static List<Suggestion> getPlayerSuggestions(File playerFile) {
-        if (!playerFile.exists()) {
-            System.out.println("Player file does not exist: " + playerFile.getName());
-            return Collections.emptyList();
-        }
-
-        FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
-        List<String> suggestionUUIDs = playerConfig.getStringList("suggestions");
-
-        if (suggestionUUIDs.isEmpty()) {
-            System.out.println("No suggestions found in player file: " + playerFile.getName());
-            return Collections.emptyList();
-        }
-
         List<Suggestion> playerSuggestions = new ArrayList<>();
-        for (String uuidString : suggestionUUIDs) {
-            try {
-                UUID suggUUID = UUID.fromString(uuidString);
-                Suggestion suggestion = ConfigManager.getSuggestionByUUID(suggUUID);
+        FileConfiguration config = YamlConfiguration.loadConfiguration(playerFile);
+        List<String> uuidStrings = config.getStringList("suggestions");
 
-                if (suggestion != null) {
-                    playerSuggestions.add(suggestion);
-                    System.out.println("Retrieved suggestion: " + suggestion.getTitle() + " (UUID: " + suggUUID + ")");
-                } else {
-                    System.out.println("No suggestion found for UUID: " + suggUUID);
-                }
-            } catch (IllegalArgumentException e) {
-                System.out.println("Invalid UUID format in player file: " + uuidString);
+        for (String uuidStr : uuidStrings) {
+            UUID uuid = UUID.fromString(uuidStr);
+            Suggestion suggestion = getSuggestionByUUID(uuid); // This should search all lists
+
+            if (suggestion != null) {
+                playerSuggestions.add(suggestion);
             }
         }
         return playerSuggestions;
     }
 
+    public static Suggestion getSuggestionByUUID(UUID uuid) {
+        for (Suggestion suggestion : ConfigManager.getSuggestions()) {
+            if (suggestion.getUniqueID().equals(uuid)) {
+                return suggestion;
+            }
+        }
+        for (Suggestion suggestion : ConfigManager.getPendingSuggestions()) {
+            if (suggestion.getUniqueID().equals(uuid)) {
+                return suggestion;
+            }
+        }
+        return null;
+    }
 
     public static void savePlayerFile(File playerFile){
         if (playerFile != null) {

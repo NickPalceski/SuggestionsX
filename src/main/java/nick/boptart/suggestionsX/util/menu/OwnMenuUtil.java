@@ -29,7 +29,7 @@ public class OwnMenuUtil {
 
         int slot = 0;
         for (Suggestion suggestion : pageSuggestions) {
-            fillSuggestionData(slot, suggestion, ownMenu); // Your method to add the suggestion to the menu
+            fillSuggestionData(slot, suggestion, ownMenu); //  add the suggestion to the menu
             slot++;
         }
     }
@@ -45,8 +45,6 @@ public class OwnMenuUtil {
 
     private static void fillSuggestionData(int index, Suggestion suggestion, Inventory ownMenu) {
         String suggestionTitle = suggestion.getTitle();
-        String suggestionDesc = suggestion.getDescription();
-        int suggestionStatus = suggestion.getStatus();
 
         //Create suggestion item
         ItemStack ownSuggestionItem = new ItemStack(Material.WRITTEN_BOOK);
@@ -56,16 +54,19 @@ public class OwnMenuUtil {
         // Store the suggestion UUID inside the item meta (to identify uniquely)
         MenuUtil.createSuggestionMetaKey(ownMeta, suggestion);
 
+        Suggestion.Status suggestionStatus = suggestion.getStatus();
+        String suggestionDesc = suggestion.getDescription();
+
         //Fill suggestion lore
         List<String> ownSuggestionLore = new ArrayList<>();
         switch(suggestionStatus) {
-            case 0:
+            case PENDING:
                 setPendingSuggestionLore(suggestionDesc, ownSuggestionLore);
                 break;
-            case 1:
+            case APPROVED:
                 setApprovedSuggestionLore(ownSuggestionLore, suggestion);
                 break;
-            case 2:
+            case DENIED:
                 setDeniedSuggestionLore(suggestionDesc, ownSuggestionLore);
                 break;
             default:
