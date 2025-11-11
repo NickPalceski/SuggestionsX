@@ -1,21 +1,30 @@
 ![image](https://github.com/user-attachments/assets/2403e46a-f237-465e-b6d5-2afdc8705d86)
 
+SuggestionsX is a Minecraft plugin designed to let players create, view, and vote on server suggestions through an intuitive and interactive GUI. The system aims to make community feedback simple, organized, and engaging for both players and admins.
 
 
-## A more advanced version of SuggestionsPL   
-### (currently still in development)
+# currently still in development
 My main goal right now is to finish the functionality of the plugin and then go through to hopefully optimize it.
 
 
-# Features
-### - A main menu GUI to navigate: 
-###      server suggestions
-###      own suggestions 
-###      pending suggestions (for admins)
-### - Configurable limit of suggestions players can make.
-### - Configurable GUI titles (with color codes).
-### - Player files to manage a players own suggestions.
-### - A suggestions file to manage all suggestions.
+
+### Main Menu GUI
+Easily navigate through:
+
+   Server-wide suggestions
+   Your own suggestions
+   Pending suggestions (admin-only)
+
+### Fully Configurable Settings
+
+   Customizable limit on the number of suggestions a player can make
+   Editable GUI titles with color codes
+
+### Data Management
+
+   Individual player files to track personal suggestions
+   A global suggestions file to manage all entries
+
 
 
 # Perfect Scenario
@@ -26,17 +35,19 @@ My main goal right now is to finish the functionality of the plugin and then go 
 
 
 # Permissions
-Waiting to be implemented...
+Permissions are currently in development.
 
 
 # Commands
-Waiting to be implemented...
+Commands are currently in development.
 
 
 ## Side Notes
-### Players can view their own suggestions at any time to get real-time feedback on the status of their suggestions or if they wanted to delete any.
-### By default, OP's will automatically have all permissions for admin for this plugin.
-### Check permissions to see exactly which ones do what.
+   Players can view or delete their own suggestions at any time to check feedback or manage their submissions.
+
+   OPs automatically have full administrative access by default.
+
+   Once implemented, the permissions section will describe specific admin and player permission nodes.
 
 # What It Looks Like In-Game
 ### Default Player Main Menu
